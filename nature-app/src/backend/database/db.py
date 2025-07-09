@@ -1,4 +1,4 @@
-from sqlmodel import Field, SQLModel, create_engine
+from sqlmodel import Engine, Field, SQLModel, create_engine
 
 
 class Users(SQLModel, table=True):
@@ -9,7 +9,7 @@ class Users(SQLModel, table=True):
     municipality: str | None = Field(default=None, max_length=40)
 
 
-def main():
+def get_db() -> Engine:
     mysql_url="mysql+pymysql://apiuser_test:test_password@130.226.56.134:3306/nature_app"
     engine = create_engine(mysql_url, echo=True)
-    engine.connect()
+    return engine
