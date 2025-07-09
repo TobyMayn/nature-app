@@ -26,6 +26,8 @@ services:
       DATABASE_PASSWORD: ${MYSQL_PASSWORD:-test_password}
     depends_on:
       - db # Ensure DB starts before backend
+    links:
+      - db
     restart: unless-stopped
 
 volumes:
