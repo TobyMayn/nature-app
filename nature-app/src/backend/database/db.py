@@ -1,4 +1,4 @@
-from sqlmodel import Field, SQLModel, create_engine
+from sqlmodel import Field, SQLModel, create_engine, text
 
 
 class Users(SQLModel, table=True):
@@ -12,5 +12,6 @@ class Users(SQLModel, table=True):
 async def get_db():
     mysql_url="mysql+pymysql://apiuser_test:test_password@130.226.56.134:3306/nature_app"
     engine = create_engine(mysql_url, echo=True)
-    engine.connect()
+    conn = engine.connect()
+    conn.execute(text("show tables;"))
     return [{"text": "Engine created"}]
