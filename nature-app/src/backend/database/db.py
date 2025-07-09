@@ -9,6 +9,7 @@ class Users(SQLModel, table=True):
     municipality: str | None = Field(default=None, max_length=40)
 
 
-mysql_url="mysql+pymysql://apiuser_test:test_password@130.226.56.134:3306/nature_app"
-engine = create_engine(mysql_url, echo=True)
-engine.connect()
+def main():
+    mysql_url="mysql+pymysql://apiuser_test:test_password@130.226.56.134:3306/nature_app"
+    engine = create_engine(mysql_url, echo=True)
+    engine.connect()
