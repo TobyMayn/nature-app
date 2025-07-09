@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-nature_app}
+      MYSQL_USER: ${MYSQL_USER:-apiuser_test}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-test_password}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql_init:/docker-entrypoint-initdb.d # Optional: For initial schema/data
+    ports:
+      - "3306:3306" # Expose MySQL port to host (optional, for direct access)
+    restart: unless-stopped
+
+  backend:
+    build: ./src/backend
+    container_name: backend_api
+    ports:
+      - "80:80" # Expose backend API on host port 80
+    environment:
+      DATABASE_HOST: db
+      DATABASE_NAME: ${MYSQL_DATABASE:-nature_app}
+      DATABASE_USER: ${MYSQL_USER:-apiuser_test}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD:-test_password}
+    depends_on:
+      - db # Ensure DB starts before backend
+    restart: unless-stopped
+
+volumes:
+  db_data: # Define a named volume for persistent database data

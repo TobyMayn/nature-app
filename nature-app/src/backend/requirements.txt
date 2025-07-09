@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+numpy
+rasterio
+Pillow
+scikit-image
+PyMySQL # For MySQL database connection
+geopandas
+shapely
