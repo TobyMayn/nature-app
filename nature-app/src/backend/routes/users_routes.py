@@ -1,6 +1,5 @@
+from controllers import users_controller
 from fastapi import APIRouter
-
-from ..controllers import users_controller
 
 user_controller = users_controller.UsersController()
 
