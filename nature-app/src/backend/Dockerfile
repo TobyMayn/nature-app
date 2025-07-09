@@ -1,7 +1,7 @@
 # Use a specific Python base image (adjust version as needed)
 # If you need CUDA/GPU support, you'd use an nvidia/cuda or pytorch/pytorch base image
 # e.g., FROM pytorch/pytorch:1.13.1-cuda11.6-cudnn8-runtime
-FROM python:3.12-slim-buster
+FROM python:3.12-bullseye
 
 # Set the working directory in the container
 WORKDIR /app
