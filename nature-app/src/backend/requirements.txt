@@ -9,3 +9,5 @@ geopandas
 shapely
 sqlmodel
 cryptography
+pyjwt
+passlib[bcrypt]
