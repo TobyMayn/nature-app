@@ -13,5 +13,5 @@ async def get_db():
     mysql_url="mysql+pymysql://apiuser_test:test_password@130.226.56.134:3306/nature_app"
     engine = create_engine(mysql_url, echo=True)
     conn = engine.connect()
-    conn.execute(text("show tables;"))
-    return [{"text": "Engine created"}]
+    
+    return [{"text": f"Engine created {conn.execute(text("show tables;"))}"}]
