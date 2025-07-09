@@ -8,3 +8,4 @@ PyMySQL # For MySQL database connection
 geopandas
 shapely
 sqlmodel
+cryptography
