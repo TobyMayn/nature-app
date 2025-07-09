@@ -12,7 +12,7 @@ async def read_users():
 
 @router.get("/users/db_test", tags=["users"])
 async def get_db():
-    return await print(db.get_db())
+    return await db.get_db()
 
 @router.get("/users/{user_id}", tags=["users"])
 async def read_user(user_id: str):

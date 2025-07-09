@@ -9,7 +9,8 @@ class Users(SQLModel, table=True):
     municipality: str | None = Field(default=None, max_length=40)
 
 
-def get_db() -> any:
+def get_db():
     mysql_url="mysql+pymysql://apiuser_test:test_password@130.226.56.134:3306/nature_app"
     engine = create_engine(mysql_url, echo=True)
-    return engine
+    engine.connect()
+    return [{"text": "Engine created"}]
