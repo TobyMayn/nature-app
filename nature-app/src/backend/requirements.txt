@@ -7,3 +7,4 @@ scikit-image
 PyMySQL # For MySQL database connection
 geopandas
 shapely
+sqlmodel
