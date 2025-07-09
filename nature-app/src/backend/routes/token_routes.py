@@ -1,7 +1,15 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from controllers.token_controller import TokenController
+from deps import SessionDep
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
+session = SessionDep
+
 
 @router.get("/token", tags=["token"])
-async def get_token():
-    return [{"text": "This is the token path"}]
+def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
+                            session: SessionDep):
+    return TokenController.login_for_access_token(form_data, session)
