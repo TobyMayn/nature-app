@@ -14,4 +14,4 @@ async def get_db():
     engine = create_engine(mysql_url, echo=True)
     conn = engine.connect()
     
-    return [{"text": f"Engine created {conn.execute(text("show tables;"))}"}]
+    return [{"text": f"Engine created {conn.execute(text("show tables;")).all()}"}]
