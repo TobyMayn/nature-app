@@ -40,7 +40,7 @@ class TokenService:
         user = self.get_user(session, username)
         if not user:
             return False
-        if not self.verify_password(password, user.hashed_password):
+        if not self.verify_password(password, user.password_hash):
             return False
         return user
 
