@@ -9,4 +9,5 @@ from services.token_service import TokenService
 class TokenController():
     def login_for_access_token(self, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
                                session: SessionDep):
-        return TokenService.login_for_access_token(form_data, session)
+        token_service = TokenService()
+        return token_service.login_for_access_token(form_data, session)
