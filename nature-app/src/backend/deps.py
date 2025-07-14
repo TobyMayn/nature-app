@@ -14,10 +14,11 @@ def get_db() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
 
-
+# This injects a database session into all endpoints that needs it.
 SessionDep = Annotated[Session, Depends(get_db)]
 
 
+# This is injected into all endpoints that need user authentication to be used.
 async def get_current_user(session: SessionDep, token: Annotated[str, Depends(oauth2_scheme)]) -> Users:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
