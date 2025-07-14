@@ -1,8 +1,6 @@
 
 from fastapi import FastAPI
-from routes import layers_routers, results_routes, users_routes
-
-from backend.routes import auth_routes
+from routes import auth_routes, layers_routers, results_routes, users_routes
 
 app = FastAPI(title="Nature Assessment Tool API", root_path="/api/v1", version="0.1.0")
 
