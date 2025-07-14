@@ -6,11 +6,16 @@ from deps import SessionDep
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from models import Token, Users
-from security import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY, pwd_context
+from security import (
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    ALGORITHM,
+    SECRET_KEY,
+    pwd_context,
+)
 from sqlmodel import Session, select
 
 
-class TokenService:
+class AuthService:
     def login_for_access_token(self, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], 
                                session: SessionDep):
         user = self.authenticate_user(session, form_data.username, form_data.password)
@@ -54,3 +59,5 @@ class TokenService:
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
+    
+    
