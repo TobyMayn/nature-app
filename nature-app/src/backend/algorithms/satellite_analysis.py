@@ -1,0 +1,2 @@
+class SatelitteAnalysis:
+    pass
