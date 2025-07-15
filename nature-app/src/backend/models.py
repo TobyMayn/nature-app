@@ -28,6 +28,9 @@ class AnalysisBody(BaseModel):
     polygon: Polygon
     requested_at: DateTime
 
+class AnalysisPayload(BaseModel):
+    result_id: int
+
 class Results(SQLModel, table=True):
     results_id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key=True)
