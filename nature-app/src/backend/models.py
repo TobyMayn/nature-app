@@ -26,6 +26,7 @@ class AnalysisBody(BaseModel):
     start_date: str
     end_date: str
     polygon: Polygon
+    requested_at: DateTime
 
 class Results(SQLModel, table=True):
     results_id: int | None = Field(default=None, primary_key=True)
