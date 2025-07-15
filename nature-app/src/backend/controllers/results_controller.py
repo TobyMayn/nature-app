@@ -7,9 +7,9 @@ from sqlmodel import Session
 algorithm_service = AlgorithmService()
 
 class ResultsController():
-    async def analyse_area(self, session: Session, body: AnalysisBody):
+    async def analyse_area(self, user_id: int, session: Session, body: AnalysisBody):
         try:
-            return await algorithm_service.create_analysis(session, body)
+            return await algorithm_service.create_analysis(user_id, session, body)
         
         except NoAnalysisTypeException:
             return HTTPException(
