@@ -1,10 +1,13 @@
+import math
 import os
+from io import BytesIO
 from typing import List, Literal, Optional, Tuple
 
 import numpy as np
 import rasterio  # For satellite data handling (if needed)
 from fastapi import HTTPException
 from owslib.wms import WebMapService
+from PIL import Image
 
 # Import shapely for geometry processing
 from shapely.geometry import Polygon
@@ -19,11 +22,11 @@ class ImageDownloader:
     Adapted from Crop_images_SG.py for direct use within the service.
     Downloads images from a WMS service given a bounding box.
     """
-    def __init__(self, min_lat: float, min_lon: float,
+    def __init__(self, save_directory: str, min_lat: float, min_lon: float,
                  max_lat: float, max_lon: float, image_size: str,
-                 length: Optional[int] = None, width: Optional[int] = None,
+                 length: int = 512, width: int = 512,
                  layers: list = []):
-        self.save_directory = "src/backend/data"
+        self.save_directory = save_directory
         self.min_lon = min_lon
         self.min_lat = min_lat
         self.max_lon = max_lon
@@ -37,14 +40,18 @@ class ImageDownloader:
 
     def _download_tile(self, bbox: Tuple[float, float, float, float], file_path: str):
         """Helper to download a single tile."""
-        img = self.wms.getmap(
+        response = self.wms.getmap(
             layers=self.layers,
+            styles=[],
             srs='EPSG:28532', # WGS84 for lat/lon
             bbox=bbox,
             size=(self.image_size_x, self.image_size_y),
             format='image/png',
             transparent=True
         )
+        img = Image.open(BytesIO(response.read()))
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
         out = open(file_path, 'wb')
         out.write(img.read())
         out.close()
@@ -56,32 +63,25 @@ class ImageDownloader:
         Returns a list of paths to the downloaded images.
         """
         downloaded_paths = []
+        for layer in self.layers:
+            image_num = 0
+                
+            delta_lat = self.length / 111111  # ~111.1 km per degree lat
+            delta_lon = self.width / (111111 * math.cos(math.radians(self.min_lat)))
 
-        if self.length and self.width:
-            # Calculate grid based on tile length/width
-            # Approximation for degrees per meter (highly simplified, assumes roughly constant)
-            # For accurate tiling, consider using a proper projection library or a GIS tool.
-            # This logic is adapted from your Crop_images_SG.py:
-            # delta_lat = self.length / 111111  # ~111.1 km per degree lat
-            # delta_lon = self.width / (111111 * math.cos(math.radians(self.min_lat)))
-            # A more robust way would be to get the total meters in lat/lon span
-            # and divide by desired tile size, or use projected coordinates.
+            cur_lat = self.min_lat
+            cur_lon = self.min_lon
 
-            # Simplified: just download the whole bbox if tiling is complex
-            # For precise tiling, you'd calculate sub-bboxes here and loop _download_tile
-            print("Tiling requested, but using full bbox download for simplicity in this integration example. "
-                  "Refine tiling logic in ImageDownloader.download_images if needed.")
-            file_name = f"ortho_{self.min_lat}_{self.min_lon}_{self.max_lat}_{self.max_lon}.png"
-            file_path = os.path.join(self.save_directory, file_name)
-            self._download_tile((self.min_lon, self.min_lat, self.max_lon, self.max_lat), file_path)
-            downloaded_paths.append(file_path)
-
-        else:
-            # Download the entire bounding box as one image
-            file_name = f"ortho_{self.min_lat}_{self.min_lon}_{self.max_lat}_{self.max_lon}.png"
-            file_path = os.path.join(self.save_directory, file_name)
-            self._download_tile((self.min_lon, self.min_lat, self.max_lon, self.max_lat), file_path)
-            downloaded_paths.append(file_path)
+            while cur_lat < self.max_lat:
+                while cur_lon < self.max_lon:
+                    max_lat = cur_lat + delta_lat
+                    max_lon = cur_lon + delta_lon
+            
+                    file_name = f"{layer}_{cur_lat}_{cur_lon}_{max_lat}_{max_lon}_{image_num}.png"
+                    file_path = os.path.join(self.save_directory, file_name)
+                    self._download_tile((cur_lon, cur_lon, max_lon, max_lat), file_path)
+                    downloaded_paths.append(file_path)
+            image_num += 1
 
         return downloaded_paths
 
