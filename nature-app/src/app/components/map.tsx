@@ -1,10 +1,13 @@
 "use client";
 import { Map, View } from "ol";
+import Modify from 'ol/interaction/Modify.js';
 import TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
 import "ol/ol.css";
 import { get as getProjection } from "ol/proj";
 import { register } from 'ol/proj/proj4';
 import { OSM } from "ol/source";
+import VectorSource from "ol/source/Vector";
 import proj4 from 'proj4';
 import { useEffect } from "react";
 
@@ -54,7 +57,18 @@ function MapView() {
     // It's 256x256, which is OpenLayers default, but good to be explicit.
     const tileSize = 256;
 
-
+    const source = new VectorSource();
+    const vector = new VectorLayer({
+        source: source,
+        style: {
+            'fill-color': 'rgba(255, 255, 255, 0.2)',
+            'stroke-color': '#ffcc33',
+            'stroke-width': 2,
+            'circle-radius': 7,
+            'circle-fill-color': '#ffcc33',
+        },
+    });
+      
     useEffect(() => {
         const map = new Map({
             target: "map",
@@ -62,6 +76,7 @@ function MapView() {
                 new TileLayer({
                     source: new OSM()
                 }),
+                vector,
                 // new TileLayer({
                 //     source: new WMTS({
                 //         // Base URL from GetCapabilities 'GetTile' operation xlink:href
@@ -96,8 +111,40 @@ function MapView() {
             map.setTarget(undefined);
         };
     }, []);
+    
+    const modify = new Modify({source: source});
+    map.addInteraction(modify);
 
-    return <div id="map" style={{ width: "100%", height: "100vh" }} />;
+    let draw, snap; // global so we can remove them later
+    const typeSelect = document.getElementById('type');
+
+    function addInteractions() {
+    draw = new Draw({
+        source: source,
+        type: typeSelect.value,
+    });
+    map.addInteraction(draw);
+    snap = new Snap({source: source});
+    map.addInteraction(snap);
+    }
+
+    /**
+     * Handle change event.
+     */
+    typeSelect.onchange = function () {
+    map.removeInteraction(draw);
+    map.removeInteraction(snap);
+    addInteractions();
+    };
+
+    addInteractions();
+    return (
+        <div>
+            <div id="polygon" style={{width: "50px", height: "30px"}}>Draw</div>
+            <div id="map" style={{ width: "100%", height: "100vh" }} />
+        </div>
+        
+    );
 }
 
 export default MapView;
