@@ -1,3 +1,4 @@
+import MapView from "./components/map";
 import { SignIn } from "./components/sign-in";
 import ButtonAppBar from "./components/topAppBar";
 
@@ -8,6 +9,7 @@ export default function Home() {
       <div className="">
         <SignIn></SignIn>
       </div>
+      <MapView></MapView>
     </div>
   );
 }
