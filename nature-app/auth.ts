@@ -6,7 +6,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
       credentials: {
-        username: { label: "Email", type: "email" },
+        username: { label: "Username", type: "username" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
@@ -18,6 +18,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           body: JSON.stringify(credentials),
         });
         const json = await response.json();
+        console.log(json)
 
         if (!response.ok) throw new CredentialsSignin(json.detail);
 
