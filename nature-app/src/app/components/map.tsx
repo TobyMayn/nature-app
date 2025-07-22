@@ -1,6 +1,8 @@
 "use client";
 import { Map, View } from "ol";
+import Draw from 'ol/interaction/Draw.js';
 import Modify from 'ol/interaction/Modify.js';
+import Snap from 'ol/interaction/Snap.js';
 import TileLayer from "ol/layer/Tile";
 import VectorLayer from "ol/layer/Vector";
 import "ol/ol.css";
@@ -102,45 +104,46 @@ function MapView() {
                 // Set center and zoom according to your needs within the new projection extent
                 // A good starting center could be the middle of the projection extent
                 center: [700811.1296944167,6169212.693143044],
-                zoom: 10, // Start at zoom 0 or adjust based on desired initial view
+                zoom: 12, // Start at zoom 0 or adjust based on desired initial view
                 extent: projectionExtent, // Constrain the view to the projection's extent
             }),
         });
+        const modify = new Modify({source: source});
+        map.addInteraction(modify);
 
+        let draw: Draw, snap: Snap; // global so we can remove them later
+        const typeSelect = document.getElementById('type');
+
+        function addInteractions() {
+            draw = new Draw({
+                source: source,
+                type: "Polygon",
+            });
+            map.addInteraction(draw);
+            snap = new Snap({source: source});
+            map.addInteraction(snap);
+        }
+        typeSelect!.onchange = function () {
+            map.removeInteraction(draw);
+            map.removeInteraction(snap);
+            addInteractions();
+        };
+        addInteractions();
+        console.log(vector)
         return () => {
             map.setTarget(undefined);
         };
     }, []);
+
     
-    const modify = new Modify({source: source});
-    map.addInteraction(modify);
-
-    let draw, snap; // global so we can remove them later
-    const typeSelect = document.getElementById('type');
-
-    function addInteractions() {
-    draw = new Draw({
-        source: source,
-        type: typeSelect.value,
-    });
-    map.addInteraction(draw);
-    snap = new Snap({source: source});
-    map.addInteraction(snap);
-    }
-
-    /**
-     * Handle change event.
-     */
-    typeSelect.onchange = function () {
-    map.removeInteraction(draw);
-    map.removeInteraction(snap);
-    addInteractions();
-    };
-
-    addInteractions();
     return (
         <div>
-            <div id="polygon" style={{width: "50px", height: "30px"}}>Draw</div>
+            <form>
+                <label htmlFor="type">Geometry type &nbsp;</label>
+                <select id="type">
+                    <option value="Polygon">Polygon</option>
+                </select>
+            </form>
             <div id="map" style={{ width: "100%", height: "100vh" }} />
         </div>
         
