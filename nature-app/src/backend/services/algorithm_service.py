@@ -7,8 +7,8 @@ from algorithms.algo_factory import (  # noqa: F401
 from database.location import LocationAccess
 from database.results import ResultsAccess
 from exceptions import NoAnalysisTypeException  # noqa: F401
-from image_service import ImageDownloadService
 from models import AnalysisBody, AnalysisPayload  # noqa: F401
+from services.image_service import ImageDownloadService
 from sqlmodel import Session
 
 # concrete_algorithm_factory = ConcreteAlgorithmFactory()
