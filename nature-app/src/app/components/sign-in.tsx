@@ -1,9 +1,34 @@
 "use client";
 import { signIn } from "next-auth/react";
+import { useState } from "react";
 
 export function SignIn() {
-  const credentialsAction = (formData: FormData) => {
-    signIn("credentials", formData);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const credentialsAction = async (formData: FormData) => {
+    const username = formData.get("username") as string;
+    const password = formData.get("password") as string;
+    
+    setError(null);
+    setIsLoading(true);
+    
+    console.log("Form data:", { username, password }); // Debug log
+    
+    const result = await signIn("credentials", {
+      username: username,
+      password: password,
+      redirect: false, // Don't redirect automatically
+    });
+
+    setIsLoading(false);
+
+    if (result?.error) {
+      setError("Invalid username or password. Please try again.");
+    } else {
+      // Successful login - redirect to desired page
+      window.location.href = "/";
+    }
   };
 
   return (
@@ -18,6 +43,12 @@ export function SignIn() {
         <h1 className="mb-8 text-2xl font-bold" style={{ color: "#0E4700" }}>
           Login
         </h1>
+
+        {error && (
+          <div className="w-full mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
 
         <label htmlFor="credentials-username" className="w-full mb-4">
           <span className="block mb-2" style={{ color: "#0E4700" }}>
@@ -47,8 +78,9 @@ export function SignIn() {
 
         <input
           type="submit"
-          value="Login"
-          className="w-full px-4 py-2 text-white rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2"
+          value={isLoading ? "Signing in..." : "Login"}
+          disabled={isLoading}
+          className="w-full px-4 py-2 text-white rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{ backgroundColor: "#136100", borderColor: "#136100" }} // Button background and border (for focus ring)
         />
       </form>
