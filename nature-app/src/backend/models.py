@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
-from sqlmodel import DateTime, Field, SQLModel
+from sqlmodel import Field, SQLModel
 
 
 class Users(SQLModel, table=True):
@@ -26,7 +28,7 @@ class AnalysisBody(BaseModel):
     start_date: str
     end_date: str
     polygon: str
-    requested_at: DateTime
+    requested_at: datetime
 
 class AnalysisPayload(BaseModel):
     result_id: int
@@ -36,11 +38,11 @@ class Results(SQLModel, table=True):
     results_id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.user_id")
     location_id: int = Field(foreign_key="location.location_id")
-    analysis_date: DateTime
+    analysis_date: datetime
     analysis_type: str
     request_params: AnalysisBody
     status: str = Field(default="Pending")
-    requested_at: DateTime
-    completed_at: DateTime | None = Field(default=None)
+    requested_at: datetime
+    completed_at: datetime | None = Field(default=None)
     error_message: str | None = Field(default=None)
     result: dict | None = Field(default=None)
