@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlmodel import JSON, Field, SQLModel
 
 
@@ -33,6 +33,7 @@ class AnalysisPayload(BaseModel):
     result_id: int
 
 class Results(SQLModel, table=True):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     results_id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.user_id")
     location_id: int = Field(foreign_key="location.location_id")
