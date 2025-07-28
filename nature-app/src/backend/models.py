@@ -10,7 +10,6 @@ class Users(SQLModel, table=True):
     municipality: str | None = Field(default=None, max_length=40)
 
 class Location(SQLModel, table=True):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
     location_id: int | None = Field(default=None, primary_key=True)
     polygon: str
 
@@ -33,6 +32,7 @@ class AnalysisPayload(BaseModel):
     result_id: int
 
 class Results(SQLModel, table=True):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     results_id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key=True)
     location_id: int = Field(foreign_key=True)
