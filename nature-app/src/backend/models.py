@@ -34,8 +34,8 @@ class AnalysisPayload(BaseModel):
 class Results(SQLModel, table=True):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     results_id: int | None = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key=True)
-    location_id: int = Field(foreign_key=True)
+    user_id: int = Field(foreign_key="users.user_id")
+    location_id: int = Field(foreign_key="location.location_id")
     analysis_date: DateTime
     analysis_type: str
     request_params: AnalysisBody
