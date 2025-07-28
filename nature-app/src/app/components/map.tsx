@@ -109,27 +109,88 @@ function MapView() {
             }),
         });
         const modify = new Modify({source: source});
+        
+        // Add event listener to capture coordinates when polygon is modified
+        modify.on('modifyend', function(event) {
+            const features = event.features;
+            features.forEach(function(feature) {
+                const geometry = feature.getGeometry();
+                if (geometry) {
+                    const coordinates = geometry.getCoordinates();
+                    const extent = geometry.getExtent();
+                    console.log('Modified polygon coordinates:', coordinates);
+                    console.log('Modified polygon bounding box:', extent);
+                }
+            });
+        });
+        
         map.addInteraction(modify);
 
         let draw: Draw, snap: Snap; // global so we can remove them later
         const typeSelect = document.getElementById('type');
 
         function addInteractions() {
-            draw = new Draw({
-                source: source,
-                type: "Polygon",
-            });
-            map.addInteraction(draw);
-            snap = new Snap({source: source});
-            map.addInteraction(snap);
+            const selectedMode = (typeSelect as HTMLSelectElement).value;
+            
+            if (selectedMode === "Polygon") {
+                draw = new Draw({
+                    source: source,
+                    type: "Polygon",
+                });
+                
+                // Add event listener to capture coordinates when polygon is drawn
+                draw.on('drawend', function(event) {
+                    const feature = event.feature;
+                    const geometry = feature.getGeometry();
+                    if (geometry) {
+                        const coordinates = geometry.getCoordinates();
+                        const extent = geometry.getExtent();
+                        console.log('Polygon coordinates:', coordinates);
+                        console.log('Polygon bounding box:', extent);
+                        // You can also store these coordinates in state or send to backend
+                    }
+                });
+                
+                map.addInteraction(draw);
+                snap = new Snap({source: source});
+                map.addInteraction(snap);
+            }
+            // For Pan mode, we don't add draw/snap interactions - just use the default map interactions
         }
+        
         typeSelect!.onchange = function () {
-            map.removeInteraction(draw);
-            map.removeInteraction(snap);
+            // Remove existing drawing interactions
+            if (draw) {
+                map.removeInteraction(draw);
+            }
+            if (snap) {
+                map.removeInteraction(snap);
+            }
             addInteractions();
         };
         addInteractions();
-        console.log(vector)
+        
+        // Function to get all polygon coordinates
+        const getAllPolygonCoordinates = () => {
+            const features = source.getFeatures();
+            const allCoordinates = features.map(feature => {
+                const geometry = feature.getGeometry();
+                return geometry ? geometry.getCoordinates() : null;
+            }).filter(coords => coords !== null);
+            console.log('All polygon coordinates:', allCoordinates);
+            return allCoordinates;
+        };
+        
+        // Function to get all polygon bounding boxes
+        const getAllPolygonBoundingBoxes = () => {
+            const features = source.getFeatures();
+            const allBoundingBoxes = features.map(feature => {
+                const geometry = feature.getGeometry();
+                return geometry ? geometry.getExtent() : null;
+            }).filter(extent => extent !== null);
+            console.log('All polygon bounding boxes:', allBoundingBoxes);
+            return allBoundingBoxes;
+        }; 
         return () => {
             map.setTarget(undefined);
         };
@@ -137,11 +198,12 @@ function MapView() {
 
     
     return (
-        <div>
+        <div style={{width: "100%", height: "100vh"}}>
             <form>
-                <label htmlFor="type">Geometry type &nbsp;</label>
+                <label htmlFor="type">Mode &nbsp;</label>
                 <select id="type">
-                    <option value="Polygon">Polygon</option>
+                    <option value="Pan">Pan</option>
+                    <option value="Polygon">Draw Polygon</option>
                 </select>
             </form>
             <div id="map" style={{ width: "100%", height: "100vh" }} />
