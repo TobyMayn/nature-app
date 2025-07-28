@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ConfigDict
-from shapely import Polygon
 from sqlmodel import DateTime, Field, SQLModel
 
 
@@ -13,7 +12,7 @@ class Users(SQLModel, table=True):
 class Location(SQLModel, table=True):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     location_id: int | None = Field(default=None, primary_key=True)
-    polygon: Polygon
+    polygon: str
 
 class Token(BaseModel):
     access_token: str
@@ -27,7 +26,7 @@ class AnalysisBody(BaseModel):
     analysis_type: str
     start_date: str
     end_date: str
-    polygon: Polygon
+    polygon: str
     requested_at: DateTime
 
 class AnalysisPayload(BaseModel):
