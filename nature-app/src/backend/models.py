@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from shapely import Polygon
 from sqlmodel import DateTime, Field, SQLModel
 
@@ -11,6 +11,7 @@ class Users(SQLModel, table=True):
     municipality: str | None = Field(default=None, max_length=40)
 
 class Location(SQLModel, table=True):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     location_id: int | None = Field(default=None, primary_key=True)
     polygon: Polygon
 
@@ -22,6 +23,7 @@ class TokenData(BaseModel):
     username: str | None = None
 
 class AnalysisBody(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     analysis_type: str
     start_date: str
     end_date: str
