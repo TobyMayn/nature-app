@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Dict
 
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
@@ -38,9 +39,9 @@ class Results(SQLModel, table=True):
     location_id: int = Field(foreign_key="location.location_id")
     analysis_date: datetime
     analysis_type: str
-    request_params: dict # This is includes the parameters from AnalysisBody. SQLModel does not support adding it as a type. So we set type to dict.
+    request_params: Dict # This is includes the parameters from AnalysisBody. SQLModel does not support adding it as a type. So we set type to dict.
     status: str = Field(default="Pending")
     requested_at: datetime
     completed_at: datetime | None = Field(default=None)
     error_message: str | None = Field(default=None)
-    result: dict | None = Field(default=None)
+    result: Dict | None = Field(default=None)
