@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 
@@ -23,7 +23,6 @@ class TokenData(BaseModel):
     username: str | None = None
 
 class AnalysisBody(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
     analysis_type: str
     start_date: str
     end_date: str
@@ -34,13 +33,12 @@ class AnalysisPayload(BaseModel):
     result_id: int
 
 class Results(SQLModel, table=True):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
     results_id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.user_id")
     location_id: int = Field(foreign_key="location.location_id")
     analysis_date: datetime
     analysis_type: str
-    request_params: AnalysisBody
+    request_params: dict
     status: str = Field(default="Pending")
     requested_at: datetime
     completed_at: datetime | None = Field(default=None)
