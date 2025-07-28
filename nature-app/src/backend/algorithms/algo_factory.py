@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 
+import ortho_analysis
+import satellite_analysis
 from exceptions import InvalidAlgorithmException
-from ortho_analysis import OrthoAnalysis
-from satellite_analysis import SatelliteAnalysis
 
 
 class AbstractAlgorithmFactory(ABC):
@@ -17,8 +17,8 @@ class ConcreteAlgorithmFactory(AbstractAlgorithmFactory):
     def create_algorithm(self, type: str):
         match type:
             case "orthophoto":
-                return OrthoAnalysis()
+                return ortho_analysis.OrthoAnalysis()
             case "satelitte":
-                return SatelliteAnalysis()
+                return satellite_analysis.SatelliteAnalysis()
             case _:
                 raise InvalidAlgorithmException()
