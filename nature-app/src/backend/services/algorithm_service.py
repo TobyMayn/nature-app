@@ -11,7 +11,7 @@ from image_service import ImageDownloadService
 from models import AnalysisBody, AnalysisPayload  # noqa: F401
 from sqlmodel import Session
 
-concrete_algorithm_factory = ConcreteAlgorithmFactory()
+# concrete_algorithm_factory = ConcreteAlgorithmFactory()
 db_location = LocationAccess()
 db_results = ResultsAccess()
 image_service = ImageDownloadService()
