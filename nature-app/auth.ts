@@ -33,10 +33,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             throw new CredentialsSignin(json.detail || 'Authentication failed');
           }
 
-          // NextAuth expects a user object with at least an id
+          // Return user object with token stored in a way that persists in session
           return {
-            id: json.access_token, // or use another unique identifier from your API
-            ...json
+            id: credentials.username as string, // Use username as unique identifier
+            name: credentials.username as string,
+            email: credentials.username as string,
+            accessToken: json.access_token,
+            tokenType: json.token_type,
           };
         } catch (e: unknown) {
           console.error('Auth error:', (e as Error).message); 
@@ -45,4 +48,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     })
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      // Persist the OAuth access_token to the token right after signin
+      if (user) {
+        token.accessToken = user.accessToken;
+        token.tokenType = user.tokenType;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Send properties to the client
+      session.accessToken = token.accessToken;
+      session.tokenType = token.tokenType;
+      return session;
+    },
+  },
 })
