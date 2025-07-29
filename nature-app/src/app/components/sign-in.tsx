@@ -1,10 +1,12 @@
 "use client";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const credentialsAction = async (formData: FormData) => {
     const username = formData.get("username") as string;
@@ -26,8 +28,8 @@ export function SignIn() {
     if (result?.error) {
       setError("Invalid username or password. Please try again.");
     } else {
-      // Successful login - redirect to desired page
-      window.location.href = "/";
+      // Successful login - redirect to map page
+      router.push("/map");
     }
   };
 
