@@ -11,9 +11,15 @@ import { register } from 'ol/proj/proj4';
 import { OSM } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import proj4 from 'proj4';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import AnalysisTab from './analysis-tab';
+import ResultsViewer from './results-viewer';
 
 function MapView() {
+    const [isAnalysisTabVisible, setIsAnalysisTabVisible] = useState(false);
+    const [isResultsViewerVisible, setIsResultsViewerVisible] = useState(false);
+    const [polygonBbox, setPolygonBbox] = useState<number[] | null>(null);
+
     // 1. Projection Definition (from previous setup, confirmed by capabilities)
     const projectionCode = 'EPSG:25832';
     const projectionDefinition = '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs';
@@ -147,7 +153,10 @@ function MapView() {
                         const extent = geometry.getExtent();
                         console.log('Polygon coordinates:', coordinates);
                         console.log('Polygon bounding box:', extent);
-                        // You can also store these coordinates in state or send to backend
+                        
+                        // Set the polygon bbox and show the analysis tab
+                        setPolygonBbox(extent);
+                        setIsAnalysisTabVisible(true);
                     }
                 });
                 
@@ -207,6 +216,28 @@ function MapView() {
                 </select>
             </form>
             <div id="map" style={{ width: "100%", height: "100vh" }} />
+            
+            {/* Floating Results Button */}
+            <button
+                onClick={() => setIsResultsViewerVisible(true)}
+                className="fixed bottom-4 left-4 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg z-40"
+                title="View Analysis Results"
+            >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </button>
+
+            <AnalysisTab 
+                isVisible={isAnalysisTabVisible}
+                onClose={() => setIsAnalysisTabVisible(false)}
+                polygonBbox={polygonBbox}
+            />
+            
+            <ResultsViewer 
+                isVisible={isResultsViewerVisible}
+                onClose={() => setIsResultsViewerVisible(false)}
+            />
         </div>
         
     );
