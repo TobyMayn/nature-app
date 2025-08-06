@@ -74,15 +74,12 @@ class ImageDownloader:
         # First, find a valid bbox by trying to download from the first layer
         for layer in self.layers:
             # First attempt: try the original full bbox as provided
-            print("Trying original full bbox...")
             file_name = f"{layer}_{self.min_lon}_{self.min_lat}_{self.max_lon}_{self.max_lat}.jpg"
             file_path = os.path.join(self.save_directory, file_name)
             
             try:
                 self._download_tile(self.min_lon, self.min_lat, self.max_lon, self.max_lat, file_path, layer)
                 downloaded_paths.append(file_path)
-                valid_bbox = (self.min_lon, self.min_lat, self.max_lon, self.max_lat)
-                print(f"Success with bbox: {valid_bbox}")
             except Exception as e:
                 print(f"Failed downloading image for layer {layer}: {e}")
             
@@ -116,9 +113,6 @@ class ImageDownloadService:
         Returns paths to downloaded images.
         """
         try:
-            # min_lon, min_lat, max_lon, max_lat = self._get_bounding_box_from_polygon(polygon)
-            # print(f"Calculated Bounding Box: {min_lon}, {min_lat}, {max_lon}, {max_lat}")
-            # split_bbox = BBoxSplitter([polygon], CRS.WGS84, 2)
             # Create a unique directory for this request
             # (You might want a more robust naming/cleanup strategy)
             download_session_dir = os.path.join(self.base_download_dir, f"{analysis_type}")
