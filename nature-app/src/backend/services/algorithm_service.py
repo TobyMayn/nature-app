@@ -37,9 +37,9 @@ layers_dict = {
 class AlgorithmService:
     async def create_analysis(self, user_id: int, session: Session, body: AnalysisBody):
         analysis_type = body.analysis_type
-        polygon = body.bbox
+        bbox = body.bbox
         try:
-            location_id = await db_location.create_location(session, polygon)
+            location_id = await db_location.create_location(session, bbox)
 
             result_id = await db_results.create_results(session, body, user_id, location_id)
 
@@ -52,7 +52,7 @@ class AlgorithmService:
         start_date = datetime.strptime(body.start_date, "%Y-%m-%d %H:%M:%S")
         end_date = datetime.strptime(body.end_date, "%Y-%m-%d %H:%M:%S")
         # Download photos for analysis
-        download_paths = await image_service.download_images_for_analysis(analysis_type=analysis_type, bbox=polygon, date_range=(start_date, end_date), layers=self._filter_layers(layers=layers_dict[analysis_type], start_date=start_date, end_date=end_date))
+        download_paths = await image_service.download_images_for_analysis(analysis_type=analysis_type, bbox=bbox, date_range=(start_date, end_date), layers=self._filter_layers(layers=layers_dict[analysis_type], start_date=start_date, end_date=end_date))
         # Retrieve earliest image by date
         img_a = ski_io.imread(download_paths["files"][0][-1])
 
@@ -68,7 +68,7 @@ class AlgorithmService:
         
         try:
             # Run analysis
-            result = algorithm.predict_change(imgA_bytes=img_a, imgB_bytes=img_b, crop_size=(512, 512))
+            result = algorithm.predict_change(imgA_bytes=img_a, imgB_bytes=img_b, crop_size=(512, 512), return_polygons=True, bbox=bbox)
         except Exception as e:
             raise e
         finally:
@@ -76,7 +76,7 @@ class AlgorithmService:
             self._cleanup_downloaded_images()
 
         result_id = db_results.update_results(session, result_id, result)
-
+        
         return AnalysisPayload(result_id=result_id)
         
     
