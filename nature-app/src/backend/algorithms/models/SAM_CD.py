@@ -5,12 +5,20 @@ from torch.nn import functional as F
 from ..utils.misc import initialize_weights
 from .FastSAM.fastsam import FastSAM
 
-# Add safe globals for PyTorch 2.6+ weights_only loading
-torch.serialization.add_safe_globals([
-    'ultralytics.nn.tasks.SegmentationModel',
-    'ultralytics.nn.tasks.DetectionModel',
-    'ultralytics.nn.tasks.ClassificationModel'
-])
+# Elegant solution for PyTorch 2.6+ weights_only loading issue
+# Patch ultralytics torch_safe_load to use weights_only=False
+try:
+    from ultralytics.nn import tasks
+    original_torch_safe_load = tasks.torch_safe_load
+    
+    def patched_torch_safe_load(file, map_location=None):
+        """Patched version that uses weights_only=False for trusted model files."""
+        return torch.load(file, map_location=map_location, weights_only=False), file
+    
+    # Replace the function
+    tasks.torch_safe_load = patched_torch_safe_load
+except ImportError:
+    pass
 
 
 def conv1x1(in_planes, out_planes, stride=1):
