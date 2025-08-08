@@ -102,7 +102,7 @@ class ImageDownloadService:
 
     async def download_images_for_analysis(
         self,
-        analysis_type: Literal["ortho", "satellite"],
+        analysis_type: Literal["orthophoto", "satellite"],
         bbox: list,
         image_size: str = "1024x1024",
         date_range: Optional[Tuple[DateTime, DateTime]] = None, # For satellite data: (start_date, end_date) 'YYYY-MM-DD'
@@ -119,7 +119,7 @@ class ImageDownloadService:
 
             downloaded_files = []
 
-            if analysis_type == "ortho":
+            if analysis_type == "orthophoto":
                 print("Initiating orthophoto download...")
                 # for split in split_bbox.bbox_list:
                 #     min_lon, min_lat, max_lon, max_lat = split
