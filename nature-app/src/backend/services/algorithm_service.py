@@ -78,7 +78,7 @@ class AlgorithmService:
         result_id = db_results.update_results(session, result_id, result)
 
         return AnalysisPayload(result_id=result_id)
-        return result
+        
     
     def _filter_layers(self, layers: list, start_date: datetime, end_date: datetime) -> list:
         filtered_layers = []
