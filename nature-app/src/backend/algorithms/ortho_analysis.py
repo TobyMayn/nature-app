@@ -209,17 +209,6 @@ class OrthoAnalysis:
         crop_size = crop_size if crop_size is not None else self.default_crop_size
         use_tta = use_tta if use_tta is not None else self.default_tta
 
-        # --- Load images from bytes ---
-        # Using PIL to load from bytes, then convert to numpy
-        # imgA_pil = Image.open(BytesIO(imgA_bytes)).convert("RGB") # Ensure RGB
-        # imgB_pil = Image.open(BytesIO(imgB_bytes)).convert("RGB")
-        
-        # imgA_np = np.array(imgA_pil)
-        # imgB_np = np.array(imgB_pil)
-
-        # Normalize images (assuming Data.normalize_image is robust to different ranges)
-        # Original code uses `skimage.io.imread` which reads uint8/uint16, then converts.
-        # Ensure `Data.normalize_image` handles numpy arrays correctly.
         imgA = Data.normalize_image(imgA_bytes)
         imgB = Data.normalize_image(imgB_bytes)
         
@@ -265,7 +254,7 @@ class OrthoAnalysis:
             polygons = self._mask_to_polygons(final_pred_mask, bbox)
             return {"np_array": final_pred_mask, "polygons": polygons}
         else:
-            return final_pred_mask
+            return {"np_array": final_pred_mask, "polygons": []}
 
     def _run_inference_with_tta(self, net, tensorA, tensorB, use_tta: bool) -> torch.Tensor:
         """
