@@ -26,7 +26,7 @@ class AnalysisBody(BaseModel):
     analysis_type: str
     start_date: str
     end_date: str
-    polygon: str
+    bbox: list
     requested_at: datetime
 
 class AnalysisPayload(BaseModel):
