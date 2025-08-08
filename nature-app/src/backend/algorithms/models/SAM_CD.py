@@ -5,7 +5,6 @@ from torch.nn import functional as F
 from ..utils.misc import initialize_weights
 from .FastSAM.fastsam import FastSAM
 
-# Elegant solution for PyTorch 2.6+ weights_only loading issue
 # Patch ultralytics torch_safe_load to use weights_only=False
 try:
     from ultralytics.nn import tasks
