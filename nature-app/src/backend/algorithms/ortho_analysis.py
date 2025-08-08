@@ -5,9 +5,11 @@ from collections import OrderedDict
 from typing import Optional
 
 import numpy as np
+import pyproj
 import torch
 from rasterio.transform import Affine
 from shapely.geometry import Polygon
+from shapely.ops import transform
 from skimage import measure
 from torch.nn import functional as F
 from torchvision.transforms import functional as transF
@@ -188,8 +190,7 @@ class OrthoAnalysis:
 
 
     def predict_change(self, imgA_bytes: bytes, imgB_bytes: bytes, crop_size: tuple = None, use_tta: bool = None, 
-                      return_polygons: bool = False, transform: Optional[Affine] = None, 
-                      target_crs: str = "EPSG:25832") -> tuple:
+                      return_polygons: bool = False, bbox: list = None) -> tuple:
         """
         Performs change detection prediction on two input images (as bytes).
 
@@ -199,12 +200,11 @@ class OrthoAnalysis:
             crop_size: Tuple (height, width) for model input cropping. Uses default if None.
             use_tta: Boolean for Test Time Augmentation. Uses default if None.
             return_polygons: Boolean to also return shapely polygons. Uses default if None.
-            transform: Rasterio Affine transform to convert pixel coordinates to geographic coordinates.
-            target_crs: Target coordinate reference system for polygons (default: EPSG:25832).
+            bbox: Bounding box as [min_lat, min_lon, max_lat, max_lon] in EPSG:25832. Required if return_polygons is True.
 
         Returns:
             If return_polygons is False: A numpy array representing the binary change mask (0 or 255).
-            If return_polygons is True: A tuple (mask, polygons) where polygons is a list of shapely Polygon objects in the target CRS.
+            If return_polygons is True: A tuple (mask, polygons) where polygons is a list of shapely Polygon objects in EPSG:25832.
         """
         crop_size = crop_size if crop_size is not None else self.default_crop_size
         use_tta = use_tta if use_tta is not None else self.default_tta
@@ -260,8 +260,10 @@ class OrthoAnalysis:
                 final_pred_mask = ((output.cpu().detach().numpy().squeeze() > 0.5) * 255).astype(np.uint8)
         
         if return_polygons:
-            polygons = self._mask_to_polygons(final_pred_mask, transform=transform, target_crs=target_crs)
-            return final_pred_mask, polygons
+            if bbox is None:
+                raise ValueError("bbox parameter is required when return_polygons=True")
+            polygons = self._mask_to_polygons(final_pred_mask, bbox)
+            return {"np_array": final_pred_mask, "polygons": polygons}
         else:
             return final_pred_mask
 
@@ -290,25 +292,39 @@ class OrthoAnalysis:
 
         return output
 
-    def _mask_to_polygons(self, mask: np.ndarray, min_area: int = 10, 
-                         transform: Optional[Affine] = None, target_crs: str = "EPSG:25832") -> list:
+    def _mask_to_polygons(self, mask: np.ndarray, bbox: list, source_crs: str = "EPSG:25832", min_area: int = 10) -> list:
         """
-        Converts a binary mask to a list of shapely polygons in the specified CRS.
+        Converts a binary mask to a list of shapely polygons in EPSG:25832.
         
         Args:
             mask: Binary mask array (0s and 1s or 0s and 255s)
-            min_area: Minimum area threshold for polygons (pixels if no transform, square meters if transformed)
-            transform: Rasterio Affine transform to convert pixel coordinates to geographic coordinates
-            target_crs: Target coordinate reference system (default: EPSG:25832)
+            bbox: Bounding box as [min_lat, min_lon, max_lat, max_lon] in EPSG:25832
+            source_crs: Source coordinate reference system (default: EPSG:25832)
+            min_area: Minimum area threshold for polygons in square meters
             
         Returns:
-            List of shapely Polygon objects in the target CRS
+            List of shapely Polygon objects in EPSG:25832
         """
         # Ensure mask is binary (0 and 1)
         binary_mask = (mask > 0).astype(np.uint8)
         
         # Find contours using skimage
         contours = measure.find_contours(binary_mask, 0.5)
+        
+        # Get mask dimensions
+        height, width = mask.shape
+        
+        # Create transform from pixel coordinates to geographic coordinates
+        # bbox format: [min_lat, min_lon, max_lat, max_lon] but we need [min_x, min_y, max_x, max_y]
+        min_x, min_y, max_x, max_y = bbox[1], bbox[0], bbox[3], bbox[2]  # lon=x, lat=y
+        transform_matrix = Affine.from_gdal(min_x, (max_x - min_x) / width, 0, max_y, 0, (min_y - max_y) / height)
+        
+        # Set up coordinate transformation (only if source_crs is different from EPSG:25832)
+        transformer = None
+        if source_crs != "EPSG:25832":
+            source_proj = pyproj.CRS(source_crs)
+            target_proj = pyproj.CRS("EPSG:25832")
+            transformer = pyproj.Transformer.from_crs(source_proj, target_proj, always_xy=True)
         
         polygons = []
         for contour in contours:
@@ -318,17 +334,20 @@ class OrthoAnalysis:
             # Create polygon if it has enough points
             if len(coords) >= 3:
                 try:
-                    # Transform coordinates if transform is provided
-                    if transform is not None:
-                        # Convert pixel coordinates to geographic coordinates
-                        transformed_coords = []
-                        for x, y in coords:
-                            geo_x, geo_y = transform * (x, y)
-                            transformed_coords.append((geo_x, geo_y))
-                        coords = transformed_coords
+                    # Transform pixel coordinates to geographic coordinates using the affine transform
+                    geo_coords = []
+                    for x, y in coords:
+                        geo_x, geo_y = transform_matrix * (x, y)
+                        geo_coords.append((geo_x, geo_y))
                     
-                    polygon = Polygon(coords)
-                    # Filter by minimum area
+                    # Create polygon in source CRS
+                    polygon = Polygon(geo_coords)
+                    
+                    # Transform to EPSG:25832 if needed
+                    if transformer is not None:
+                        polygon = transform(transformer.transform, polygon)
+                    
+                    # Filter by minimum area and validity
                     if polygon.area >= min_area and polygon.is_valid:
                         polygons.append(polygon)
                 except Exception:
