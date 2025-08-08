@@ -1,31 +1,74 @@
+import glob
 import math
+import os
 from collections import OrderedDict
 from typing import Optional
 
-import Levir_CD as Data  # Assuming Data.normalize_image
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
-
-# Assuming these are available (or you provide dummy implementations for illustration)
-from models.SAM_CD import SAM_CD as Net
-from pyproj import Transformer
-from rasterio.transform import Affine, from_bounds
-from shapely import to_geojson
+from rasterio.transform import Affine
 from shapely.geometry import Polygon
-from skimage import io as ski_io
 from skimage import measure
 from torch.nn import functional as F
 from torchvision.transforms import functional as transF
 
+from . import Levir_CD as Data  # Assuming Data.normalize_image
+
+# Assuming these are available (or you provide dummy implementations for illustration)
+from .models.SAM_CD import SAM_CD as Net
+
+
+def find_sam_cd_checkpoint() -> str:
+    """
+    Automatically finds the SAM_CD checkpoint file in the algorithms folder.
+    
+    Returns:
+        str: Path to the SAM_CD checkpoint file
+        
+    Raises:
+        FileNotFoundError: If no SAM_CD checkpoint file is found
+    """
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Look for SAM_CD checkpoint files (common patterns)
+    patterns = [
+        "SAM_CD*.pth",
+        "SAM_CD*.pt", 
+        "*SAM_CD*.pth",
+        "*SAM_CD*.pt"
+    ]
+    
+    for pattern in patterns:
+        checkpoint_files = glob.glob(os.path.join(current_dir, pattern))
+        if checkpoint_files:
+            # Return the first match, or you could add logic to pick the best one
+            return checkpoint_files[0]
+    
+    raise FileNotFoundError(
+        f"No SAM_CD checkpoint file found in {current_dir}. "
+        f"Expected files matching patterns: {patterns}"
+    )
+
 
 class OrthoAnalysis:
-    def __init__(self, model_checkpoint_path: str, device: str = 'cuda', default_crop_size: tuple = (1024, 1024), default_tta: bool = True):
+    def __init__(self, model_checkpoint_path: Optional[str] = None, device: str = 'cuda', default_crop_size: tuple = (1024, 1024), default_tta: bool = True):
         """
         Initializes the Change Detection Service.
         Loads the model once.
+        
+        Args:
+            model_checkpoint_path: Path to the model checkpoint. If None, automatically finds SAM_CD checkpoint.
+            device: Device to run the model on ('cuda' or 'cpu')
+            default_crop_size: Default crop size for processing large images
+            default_tta: Whether to use test time augmentation by default
         """
         self.device = torch.device(device, int(0))
+        
+        # Auto-find checkpoint if not provided
+        if model_checkpoint_path is None:
+            model_checkpoint_path = find_sam_cd_checkpoint()
+            print(f"Auto-found checkpoint: {model_checkpoint_path}")
+        
         self.net = self._load_model(model_checkpoint_path)
         self.default_crop_size = default_crop_size
         self.default_tta = default_tta
@@ -293,79 +336,3 @@ class OrthoAnalysis:
                     continue
                     
         return polygons
-
-# # --- How to use this service in your web app (Example) ---
-# # This part would typically be in your FastAPI/Flask/Django view or controller
-
-# # Assume configuration comes from environment variables or a settings file
-# # These paths need to be valid on your deployment environment
-MODEL_CHECKPOINT_PATH = '/home/tobymayn/school/project/nature-app/nature-app/src/backend/algorithms/SAM_CD_e9_OA98.98_F43.53_IoU32.88.pth'
-DEFAULT_DEVICE = 'cuda' # or 'cpu' if no GPU available
-
-# Initialize the service once, e.g., at app startup
-change_detector = OrthoAnalysis(
-    model_checkpoint_path=MODEL_CHECKPOINT_PATH,
-    device=DEFAULT_DEVICE,
-    default_crop_size=(1024, 1024),
-    default_tta=True
-)
-
-# Example of how an API endpoint might call it:
-# async def run_orthophoto_analysis(img_a_file: UploadFile, img_b_file: UploadFile, location_id: int):
-#     # 1. Read image bytes from the uploaded files
-img_a_bytes = ski_io.imread("/home/tobymayn/school/project/nature-app/nature-app/src/backend/data/ortho/orto2016.png")
-img_b_bytes = ski_io.imread("/home/tobymayn/school/project/nature-app/nature-app/src/backend/data/ortho/orto2020.png")
-
-#     # 2. Call the service
-#     try:
-# Example geospatial transform using actual coordinates
-# Original WGS84 bounds: 55.685965784846324,12.266039998192857 55.69057378945433,12.274214155779534
-# Converted to EPSG:25832 (UTM Zone 32N)
-
-# Transform from WGS84 to EPSG:25832
-transformer = Transformer.from_crs("EPSG:4326", "EPSG:25832", always_xy=True)
-lon1, lat1 = 12.266039998192857, 55.685965784846324  # SW corner
-lon2, lat2 = 12.274214155779534, 55.69057378945433   # NE corner
-
-west, south = transformer.transform(lon1, lat1)
-east, north = transformer.transform(lon2, lat2)
-
-# Assuming your actual image dimensions (adjust as needed)
-height, width = img_a_bytes.shape[:2]  # Get actual image dimensions
-geo_transform = from_bounds(west, south, east, north, width, height)
-
-change_mask_np, polygons = change_detector.predict_change(
-    imgA_bytes=img_a_bytes,
-    imgB_bytes=img_b_bytes,
-    crop_size=(512, 512),     # Optional: override default for this request
-    use_tta=False,            # Optional: override default
-    return_polygons=True,     # Get both mask and polygons
-    transform=geo_transform,  # Geospatial transform
-    target_crs="EPSG:25832"   # Target coordinate system
-)
-print(f"Change mask shape: {change_mask_np.shape}")
-print(f"Number of change polygons: {len(polygons)}")
-for i, polygon in enumerate(polygons):
-    print(f"Polygon {i}: area = {polygon.area:.2f} square meters")
-    print(f"Polygon {i} bounds: {polygon.exterior.xy}")  # Now in EPSG:25832 coordinates
-    print(to_geojson(polygon))
-    plt.plot(polygon.exterior.xy)
-    plt.show()
-# #         # 3. Process the numpy mask (e.g., convert to GeoJSON polygons, store in DB)
-# #         # This would involve converting the numpy mask to a geospatial vector format
-# #         # (e.g., using `rasterio`, `shapely`, `fiona`) and associating it with a geographic context.
-# #         # Example: Store 'change_mask_np' as a temporary TIFF, then vectorize.
-        
-# #         # For Untouched Areas, you'd convert the binary change_mask_np into polygons
-# #         # and persist them in your `identified_areas` table, linking to the `location_id`.
-# #         # You'd also need to retrieve the original geo-referencing info (transform, CRS)
-# #         # for imgA_bytes / imgB_bytes to correctly geo-reference the output mask.
-        
-# #         # 4. Return results (e.g., GeoJSON, status message)
-# #         return {"status": "success", "message": "Analysis complete", "change_mask_shape": change_mask_np.shape}
-        
-# #     except Exception as e:
-# #         # Handle errors and return appropriate API response
-# #         return {"status": "error", "message": str(e)}, 500
-
-Polygon([(500503, 6000400.5), (500502.5, 6000401), (500502.5, 6000402), (500502.5, 6000403), (500502.5, 6000404), (500502.5, 6000405), (500502.5, 6000406), (500502.5, 6000407), (500502, 6000407.5), (500501.5, 6000408), (500501.5, 6000409), (500501.5, 6000410), (500501.5, 6000411), (500501.5, 6000412), (500502, 6000412.5), (500502.5, 6000413), (500502.5, 6000414), (500502.5, 6000415), (500503, 6000415.5), (500504, 6000415.5), (500504.5, 6000416), (500505, 6000416.5), (500506, 6000416.5), (500507, 6000416.5), (500508, 6000416.5), (500509, 6000416.5), (500510, 6000416.5), (500510.5, 6000417), (500511, 6000417.5), (500511.5, 6000417), (500511.5, 6000416), (500511.5, 6000415), (500511.5, 6000414), (500511.5, 6000413), (500511.5, 6000412), (500511.5, 6000411), (500511.5, 6000410), (500511.5, 60004090), (500511.5, 6000408), (500511.5, 6000407), (500511.5, 6000406), (500511.5, 6000405), (500511.5, 6000404), (500511.5, 6000403), (500511, 6000402.5), (500510, 6000402.5), (500509.5, 6000403), (500509, 6000403.5), (500508.5, 6000404), (500508, 6000404.5), (500507.5, 6000405), (500507, 6000405.5), (500506.5, 6000405), (500506, 6000404.5), (500505.5, 6000404), (500505, 6000403.5), (500504.5, 6000403), (500504.5, 6000402), (500504, 6000401.5), (500503.5, 6000401), (500503, 6000400.5)])
