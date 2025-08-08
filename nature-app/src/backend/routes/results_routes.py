@@ -9,7 +9,7 @@ results_controller = ResultsController()
 
 @router.get("/results", tags=["results"])
 async def get_results():
-    return [{"text": "This is the results path"}]
+    return [{"text": "This is the results path"}] #TODO: 
 
 @router.post("/results/analyse", tags=["results"])
 async def analyse_area( session: SessionDep, body: AnalysisBody, user: Users = Depends(get_current_user)):
@@ -18,5 +18,5 @@ async def analyse_area( session: SessionDep, body: AnalysisBody, user: Users = D
 
 @router.get("/results/{result_id}", tags=["results"])
 async def get_result(result_id: str):
-    return [{"text": f"This is the result {result_id} path"}]
+    return [{"text": f"This is the result {result_id} path"}] #TODO: implement
 
