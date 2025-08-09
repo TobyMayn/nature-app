@@ -12,7 +12,7 @@ torch>=1.7.0
 torchvision>=0.8.1
 --extra-index-url https://download.pytorch.org/whl/cpu
 numpy
-opencv-python-headless>=4.6.0
+opencv-python>=4.6.0
 Pillow>=7.1.2
 scikit-image
 scipy>=1.4.1
