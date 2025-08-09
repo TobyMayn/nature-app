@@ -11,7 +11,7 @@ import { register } from 'ol/proj/proj4';
 import { OSM } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import proj4 from 'proj4';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AnalysisTab from './analysis-tab';
 import ResultsViewer from './results-viewer';
 
@@ -19,6 +19,9 @@ function MapView() {
     const [isAnalysisTabVisible, setIsAnalysisTabVisible] = useState(false);
     const [isResultsViewerVisible, setIsResultsViewerVisible] = useState(false);
     const [polygonBbox, setPolygonBbox] = useState<number[] | null>(null);
+    const [currentMode, setCurrentMode] = useState<'Pan' | 'Polygon'>('Pan');
+    const mapRef = useRef<Map | null>(null);
+    const sourceRef = useRef<VectorSource | null>(null);
 
     // 1. Projection Definition (from previous setup, confirmed by capabilities)
     const projectionCode = 'EPSG:25832';
@@ -66,6 +69,7 @@ function MapView() {
     const tileSize = 256;
 
     const source = new VectorSource();
+    sourceRef.current = source;
     const vector = new VectorLayer({
         source: source,
         style: {
@@ -131,91 +135,88 @@ function MapView() {
         });
         
         map.addInteraction(modify);
+        mapRef.current = map;
+        
+ 
+        return () => {
+            map.setTarget(undefined);
+        };
+    }, []);
 
-        let draw: Draw, snap: Snap; // global so we can remove them later
-        const typeSelect = document.getElementById('type');
-
-        function addInteractions() {
-            const selectedMode = (typeSelect as HTMLSelectElement).value;
+    // Effect to handle mode changes
+    useEffect(() => {
+        if (mapRef.current && sourceRef.current) {
+            const map = mapRef.current;
+            const source = sourceRef.current;
             
-            if (selectedMode === "Polygon") {
-                draw = new Draw({
+            // Remove existing Draw and Snap interactions
+            map.getInteractions().getArray().slice().forEach((interaction: any) => {
+                if (interaction instanceof Draw || interaction instanceof Snap) {
+                    map.removeInteraction(interaction);
+                }
+            });
+            
+            // Add new interactions based on mode
+            if (currentMode === "Polygon") {
+                const draw = new Draw({
                     source: source,
                     type: "Polygon",
                 });
                 
-                // Add event listener to capture coordinates when polygon is drawn
                 draw.on('drawend', function(event) {
                     const feature = event.feature;
                     const geometry = feature.getGeometry();
                     if (geometry) {
-                        const coordinates = geometry.getCoordinates();
                         const extent = geometry.getExtent();
-                        console.log('Polygon coordinates:', coordinates);
                         console.log('Polygon bounding box:', extent);
                         
-                        // Set the polygon bbox and show the analysis tab
                         setPolygonBbox(extent);
                         setIsAnalysisTabVisible(true);
                     }
                 });
                 
                 map.addInteraction(draw);
-                snap = new Snap({source: source});
+                const snap = new Snap({source: source});
                 map.addInteraction(snap);
             }
-            // For Pan mode, we don't add draw/snap interactions - just use the default map interactions
         }
-        
-        typeSelect!.onchange = function () {
-            // Remove existing drawing interactions
-            if (draw) {
-                map.removeInteraction(draw);
-            }
-            if (snap) {
-                map.removeInteraction(snap);
-            }
-            addInteractions();
-        };
-        addInteractions();
-        
-        // Function to get all polygon coordinates
-        const getAllPolygonCoordinates = () => {
-            const features = source.getFeatures();
-            const allCoordinates = features.map(feature => {
-                const geometry = feature.getGeometry();
-                return geometry ? geometry.getCoordinates() : null;
-            }).filter(coords => coords !== null);
-            console.log('All polygon coordinates:', allCoordinates);
-            return allCoordinates;
-        };
-        
-        // Function to get all polygon bounding boxes
-        const getAllPolygonBoundingBoxes = () => {
-            const features = source.getFeatures();
-            const allBoundingBoxes = features.map(feature => {
-                const geometry = feature.getGeometry();
-                return geometry ? geometry.getExtent() : null;
-            }).filter(extent => extent !== null);
-            console.log('All polygon bounding boxes:', allBoundingBoxes);
-            return allBoundingBoxes;
-        }; 
-        return () => {
-            map.setTarget(undefined);
-        };
-    }, []);
+    }, [currentMode]);
 
     
     return (
         <div style={{width: "100%", height: "100vh"}}>
-            <form>
-                <label htmlFor="type">Mode &nbsp;</label>
-                <select id="type">
-                    <option value="Pan">Pan</option>
-                    <option value="Polygon">Draw Polygon</option>
-                </select>
-            </form>
             <div id="map" style={{ width: "100%", height: "100vh" }} />
+            
+            {/* Floating Mode Buttons - Left Side */}
+            <div className="fixed left-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-40">
+                <button
+                    onClick={() => setCurrentMode('Pan')}
+                    className={`p-3 rounded-full shadow-lg transition-colors ${
+                        currentMode === 'Pan' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title="Pan Mode"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                    </svg>
+                </button>
+                
+                <button
+                    onClick={() => setCurrentMode('Polygon')}
+                    className={`p-3 rounded-full shadow-lg transition-colors ${
+                        currentMode === 'Polygon' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-white text-gray-700 hover:bg-gray-100'
+                    }`}
+                    title="Draw Polygon Mode"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                </button>
+            </div>
             
             {/* Floating Results Button */}
             <button
