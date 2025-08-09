@@ -7,7 +7,8 @@ cryptography
 pyjwt
 passlib[bcrypt]
 
-# Core ML and image processing (essential for algorithms)
+# Core ML and image processing (CPU-only to reduce memory usage)
+--index-url https://download.pytorch.org/whl/cpu
 torch>=1.7.0
 torchvision>=0.8.1
 numpy
