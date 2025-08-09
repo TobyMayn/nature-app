@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://130.226.56.134/api/v1';
+const API_BASE_URL = 'http://130.226.56.134:8080/api/v1';
 
 export class APIClient {
   private token: string | null = null;
