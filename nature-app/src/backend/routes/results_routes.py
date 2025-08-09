@@ -8,8 +8,8 @@ results_controller = ResultsController()
 
 
 @router.get("/results", tags=["results"])
-async def get_results():
-    return [{"text": "This is the results path"}] #TODO: 
+async def get_results(session: SessionDep, user: Users = Depends(get_current_user)):
+    return await results_controller.get_results(session=session, user_id=user.user_id)
 
 @router.post("/results/analyse", tags=["results"])
 async def analyse_area( session: SessionDep, body: AnalysisBody, user: Users = Depends(get_current_user)):

@@ -1,3 +1,4 @@
+from database.results import ResultsAccess
 from exceptions import InvalidAlgorithmException, NoAnalysisTypeException
 from fastapi import HTTPException, status
 from models import AnalysisBody
@@ -5,6 +6,7 @@ from services.algorithm_service import AlgorithmService
 from sqlmodel import Session
 
 algorithm_service = AlgorithmService()
+db_results = ResultsAccess()
 
 class ResultsController():
     async def analyse_area(self, user_id: int, session: Session, body: AnalysisBody):
@@ -26,3 +28,6 @@ class ResultsController():
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Could not process request",
                 )
+    
+    async def get_results(self, user_id: int, session: Session):
+        return await db_results.get_results(session=session)

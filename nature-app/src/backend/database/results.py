@@ -1,5 +1,7 @@
 from datetime import datetime
+from typing import Annotated
 
+from fastapi import Query
 from models import AnalysisBody, Results
 from sqlmodel import Session, select
 
@@ -43,6 +45,10 @@ class ResultsAccess:
         await session.refresh(results)
 
         return results.results_id
-        
-
-
+    
+    async def get_results(session: Session,
+        offset: int = 0,
+        limit: Annotated[int, Query(le=100)] = 100,
+    ) -> list[Results]:
+        results = session.exec(select(Results).offset(offset).limit(limit)).all()
+        return results
