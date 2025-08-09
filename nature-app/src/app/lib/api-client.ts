@@ -19,7 +19,7 @@ export class APIClient {
     return headers;
   }
 
-  async get(endpoint: string): Promise<any> {
+  async get(endpoint: string): Promise<unknown> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
       headers: this.getHeaders(),
@@ -32,7 +32,7 @@ export class APIClient {
     return response.json();
   }
 
-  async post(endpoint: string, data: any): Promise<any> {
+  async post(endpoint: string, data: unknown): Promise<unknown> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: this.getHeaders(),
@@ -46,7 +46,7 @@ export class APIClient {
     return response.json();
   }
 
-  async put(endpoint: string, data: any): Promise<any> {
+  async put(endpoint: string, data: unknown): Promise<unknown> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: this.getHeaders(),
@@ -60,7 +60,7 @@ export class APIClient {
     return response.json();
   }
 
-  async delete(endpoint: string): Promise<any> {
+  async delete(endpoint: string): Promise<unknown> {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers: this.getHeaders(),

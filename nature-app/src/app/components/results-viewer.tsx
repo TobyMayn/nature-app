@@ -19,7 +19,7 @@ interface AnalysisResult {
   requested_at: string;
   completed_at: string | null;
   error_message: string | null;
-  result: any | null;
+  result: Record<string, unknown> | null;
 }
 
 interface ResultsViewerProps {
@@ -40,7 +40,7 @@ export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps
   const fetchResults = async () => {
     setIsLoading(true);
     try {
-      const data = await apiClient.get('/results');
+      const data = await apiClient.get('/results') as AnalysisResult[];
       setResults(data.slice(0, 10)); // Show max 10 most recent results
     } catch (error) {
       console.error('Error fetching results:', error);

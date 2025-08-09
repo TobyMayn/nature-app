@@ -37,36 +37,36 @@ function MapView() {
     // 3. Tile Grid Origin (from <TopLeftCorner> in GetCapabilities)
     // Note: OpenLayers getTopLeft(extent) can be used if origin == top-left of extent.
     // However, the GetCapabilities explicitly states TopLeftCorner for the TileMatrixSet.
-    const origin = [120000.000000, 6500000.000000]; // This is (minX, maxY)
+    // const origin = [120000.000000, 6500000.000000]; // This is (minX, maxY)
 
     // 4. Resolutions (calculated from ScaleDenominator in GetCapabilities)
     // Using the formula: Resolution = ScaleDenominator / 90.71428571428571 (common for web maps)
-    const resolutions = [
-        64500.0,
-        32250.0,
-        16125.0,
-        8062.5,
-        4031.25,
-        2015.625,
-        1007.8125,
-        503.90625,
-        251.953125,
-        125.9765625,
-        62.98828125,
-        31.494140625,
-        15.7470703125,
-        7.87353515625,
-    ];
+    // const resolutions = [
+    //     64500.0,
+    //     32250.0,
+    //     16125.0,
+    //     8062.5,
+    //     4031.25,
+    //     2015.625,
+    //     1007.8125,
+    //     503.90625,
+    //     251.953125,
+    //     125.9765625,
+    //     62.98828125,
+    //     31.494140625,
+    //     15.7470703125,
+    //     7.87353515625,
+    // ];
 
     // 5. Matrix IDs (from <ows:Identifier> under each <TileMatrix>)
     // These correspond to your zoom levels 0-13.
-    const matrixIds = [
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'
-    ];
+    // const matrixIds = [
+    //     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13'
+    // ];
 
     // 6. Tile Size (from <TileWidth> and <TileHeight> in GetCapabilities)
     // It's 256x256, which is OpenLayers default, but good to be explicit.
-    const tileSize = 256;
+    // const tileSize = 256;
 
     const source = new VectorSource();
     sourceRef.current = source;
@@ -141,7 +141,7 @@ function MapView() {
         return () => {
             map.setTarget(undefined);
         };
-    }, []);
+    }, [proj, projectionExtent, source, vector]);
 
     // Effect to handle mode changes
     useEffect(() => {
@@ -150,7 +150,7 @@ function MapView() {
             const source = sourceRef.current;
             
             // Remove existing Draw and Snap interactions
-            map.getInteractions().getArray().slice().forEach((interaction: any) => {
+            map.getInteractions().getArray().slice().forEach((interaction: unknown) => {
                 if (interaction instanceof Draw || interaction instanceof Snap) {
                     map.removeInteraction(interaction);
                 }
