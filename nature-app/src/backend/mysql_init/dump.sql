@@ -22,34 +22,6 @@
 DROP TABLE IF EXISTS `identified_areas`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `identified_areas` (
-  `identified_area_id` int NOT NULL AUTO_INCREMENT,
-  `location_id` int DEFAULT NULL,
-  `geometry` polygon NOT NULL /*!80003 SRID 25832 */,
-  `classification_type` varchar(50) NOT NULL,
-  `confidence_score` decimal(5,2) DEFAULT NULL,
-  `analysis_date` date NOT NULL,
-  `duration_untouched_years` int DEFAULT NULL,
-  `derived_from_orthophoto_ids` json DEFAULT NULL,
-  `derived_from_lai_map_id` int DEFAULT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`identified_area_id`),
-  KEY `location_id` (`location_id`),
-  KEY `derived_from_lai_map_id` (`derived_from_lai_map_id`),
-  CONSTRAINT `identified_areas_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `locations` (`location_id`) ON DELETE CASCADE,
-  CONSTRAINT `identified_areas_ibfk_2` FOREIGN KEY (`derived_from_lai_map_id`) REFERENCES `lai_maps` (`lai_map_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `identified_areas`
---
-
-LOCK TABLES `identified_areas` WRITE;
-/*!40000 ALTER TABLE `identified_areas` DISABLE KEYS */;
-/*!40000 ALTER TABLE `identified_areas` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `lai_maps`
@@ -58,30 +30,9 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `lai_maps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `lai_maps` (
-  `lai_map_id` int NOT NULL AUTO_INCREMENT,
-  `capture_date` date NOT NULL,
-  `geographic_extent` polygon NOT NULL /*!80003 SRID 25832 */,
-  `resolution_meters_per_pixel` decimal(8,4) DEFAULT NULL,
-  `calculation_algorithm_version` varchar(20) DEFAULT NULL,
-  `storage_url` text NOT NULL,
-  `derived_from_satellite_photo_id` int DEFAULT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`lai_map_id`),
-  KEY `derived_from_satellite_photo_id` (`derived_from_satellite_photo_id`),
-  CONSTRAINT `lai_maps_ibfk_1` FOREIGN KEY (`derived_from_satellite_photo_id`) REFERENCES `satellite_photos` (`photo_id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
 -- Dumping data for table `lai_maps`
 --
-
-LOCK TABLES `lai_maps` WRITE;
-/*!40000 ALTER TABLE `lai_maps` DISABLE KEYS */;
-/*!40000 ALTER TABLE `lai_maps` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `locations`
@@ -112,55 +63,16 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `orthophotos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `orthophotos` (
-  `photo_id` int NOT NULL,
-  `flight_height_meters` decimal(10,2) DEFAULT NULL,
-  `sensor_type` varchar(50) DEFAULT NULL,
-  PRIMARY KEY (`photo_id`),
-  CONSTRAINT `orthophotos_ibfk_1` FOREIGN KEY (`photo_id`) REFERENCES `photos` (`photo_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `orthophotos`
---
-
-LOCK TABLES `orthophotos` WRITE;
-/*!40000 ALTER TABLE `orthophotos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `orthophotos` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `photos`
 --
 
 DROP TABLE IF EXISTS `photos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `photos` (
-  `photo_id` int NOT NULL AUTO_INCREMENT,
-  `capture_date` datetime NOT NULL,
-  `geographic_extent` polygon NOT NULL /*!80003 SRID 25832 */,
-  `resolution_meters_per_pixel` decimal(8,4) DEFAULT NULL,
-  `storage_url` text NOT NULL,
-  `photo_type` enum('orthophoto','satellite') NOT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`photo_id`),
-  UNIQUE KEY `photo_id` (`photo_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `photos`
 --
-
-LOCK TABLES `photos` WRITE;
-/*!40000 ALTER TABLE `photos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `photos` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `results`
@@ -173,24 +85,19 @@ CREATE TABLE `results` (
   `result_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
   `location_id` int DEFAULT NULL,
-  `analysis_date` date NOT NULL,
-  `analysis_type` enum('untouched_area','lai_time_series') NOT NULL,
+  `analysis_date` datetime NOT NULL,
+  `analysis_type` enum('orthophoto','satellite') NOT NULL,
   `request_parameters` json DEFAULT NULL,
   `status` enum('PENDING','RUNNING','COMPLETE','FAILED') NOT NULL,
   `requested_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `completed_at` datetime DEFAULT NULL,
   `error_message` text,
-  `linked_identified_area_id` int DEFAULT NULL,
-  `linked_lai_map_id` int DEFAULT NULL,
+  `result` json DEFAULT NULL,
   PRIMARY KEY (`result_id`),
   KEY `user_id` (`user_id`),
   KEY `location_id` (`location_id`),
-  KEY `linked_identified_area_id` (`linked_identified_area_id`),
-  KEY `linked_lai_map_id` (`linked_lai_map_id`),
   CONSTRAINT `results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `results_ibfk_2` FOREIGN KEY (`location_id`) REFERENCES `locations` (`location_id`),
-  CONSTRAINT `results_ibfk_3` FOREIGN KEY (`linked_identified_area_id`) REFERENCES `identified_areas` (`identified_area_id`) ON DELETE SET NULL,
-  CONSTRAINT `results_ibfk_4` FOREIGN KEY (`linked_lai_map_id`) REFERENCES `lai_maps` (`lai_map_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -208,26 +115,6 @@ UNLOCK TABLES;
 --
 
 DROP TABLE IF EXISTS `satellite_photos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `satellite_photos` (
-  `photo_id` int NOT NULL,
-  `satellite_name` enum('sentinel-2','landsat-8') NOT NULL,
-  `bands_included` json DEFAULT NULL,
-  `cloud_cover_percentage` decimal(5,2) DEFAULT NULL,
-  PRIMARY KEY (`photo_id`),
-  CONSTRAINT `satellite_photos_ibfk_1` FOREIGN KEY (`photo_id`) REFERENCES `photos` (`photo_id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `satellite_photos`
---
-
-LOCK TABLES `satellite_photos` WRITE;
-/*!40000 ALTER TABLE `satellite_photos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `satellite_photos` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `users`
