@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  basePath: '/nature',
+  assetPrefix: '/nature',
 };
 
 export default nextConfig;
