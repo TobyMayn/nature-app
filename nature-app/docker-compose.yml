@@ -30,16 +30,16 @@ services:
       - db
     restart: unless-stopped
 
-  frontend:
-    build: .
-    container_name: frontend_app
-    ports:
-      - "80:3000" # Expose frontend on host port 80
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - backend
-    restart: unless-stopped
+  # frontend:
+  #   build: .
+  #   container_name: frontend_app
+  #   ports:
+  #     - "80:3000" # Expose frontend on host port 80
+  #   environment:
+  #     - NODE_ENV=production
+  #   depends_on:
+  #     - backend
+  #   restart: unless-stopped
 
 volumes:
   db_data: # Define a named volume for persistent database data
