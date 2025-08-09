@@ -1,12 +1,25 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '../lib/api-client';
 
 interface AnalysisResult {
-  id: string;
-  date: string;
-  analysisType: 'ortho' | 'satellite';
-  status: 'pending' | 'error' | 'complete';
+  results_id: number;
+  user_id: number;
+  location_id: number;
+  analysis_date: string;
+  analysis_type: string;
+  request_params: {
+    analysis_type: string;
+    start_date: string;
+    end_date: string;
+    bbox: number[];
+    requested_at: string;
+  };
+  status: string;
+  requested_at: string;
+  completed_at: string | null;
+  error_message: string | null;
+  result: any | null;
 }
 
 interface ResultsViewerProps {
@@ -66,14 +79,14 @@ export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps
             ) : (
               results.map((result) => (
                 <div
-                  key={result.id}
+                  key={result.results_id}
                   className="border border-gray-200 rounded-lg p-3"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{result.date}</p>
+                      <p className="text-sm font-medium">{result.analysis_date}</p>
                       <p className="text-sm text-gray-600 capitalize">
-                        {result.analysisType} Analysis
+                        {result.analysis_type} Analysis
                       </p>
                       <span
                         className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${
@@ -89,7 +102,7 @@ export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps
                     </div>
                     {result.status === 'complete' && (
                       <button
-                        onClick={() => handleApplyLayer(result.id)}
+                        onClick={() => handleApplyLayer(result.results_id.toString())}
                         className="text-sm bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
                       >
                         Apply Layer
