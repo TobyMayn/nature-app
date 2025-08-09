@@ -11,7 +11,7 @@ import { register } from 'ol/proj/proj4';
 import { OSM } from "ol/source";
 import VectorSource from "ol/source/Vector";
 import proj4 from 'proj4';
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import AnalysisTab from './analysis-tab';
 import ResultsViewer from './results-viewer';
 
@@ -27,12 +27,12 @@ function MapView() {
     const projectionCode = 'EPSG:25832';
     const projectionDefinition = '+proj=utm +zone=32 +ellps=GRS80 +units=m +no_defs';
     proj4.defs(projectionCode, projectionDefinition);
-    register(proj4);
+    register(proj4 as unknown as typeof import('proj4'));
 
     const proj = getProjection(projectionCode);
 
     // 2. Projection Extent (from <ows:BoundingBox> in GetCapabilities)
-    const projectionExtent = [120000, 5900000, 1000000, 6500000];
+    const projectionExtent = useMemo(() => [120000, 5900000, 1000000, 6500000], []);
 
     // 3. Tile Grid Origin (from <TopLeftCorner> in GetCapabilities)
     // Note: OpenLayers getTopLeft(extent) can be used if origin == top-left of extent.
@@ -68,9 +68,13 @@ function MapView() {
     // It's 256x256, which is OpenLayers default, but good to be explicit.
     // const tileSize = 256;
 
-    const source = new VectorSource();
-    sourceRef.current = source;
-    const vector = new VectorLayer({
+    const source = useMemo(() => {
+        const s = new VectorSource();
+        sourceRef.current = s;
+        return s;
+    }, []);
+    
+    const vector = useMemo(() => new VectorLayer({
         source: source,
         style: {
             'fill-color': 'rgba(255, 255, 255, 0.2)',
@@ -79,7 +83,7 @@ function MapView() {
             'circle-radius': 7,
             'circle-fill-color': '#ffcc33',
         },
-    });
+    }), [source]);
       
     useEffect(() => {
         const map = new Map({
@@ -126,9 +130,7 @@ function MapView() {
             features.forEach(function(feature) {
                 const geometry = feature.getGeometry();
                 if (geometry) {
-                    const coordinates = geometry.getCoordinates();
                     const extent = geometry.getExtent();
-                    console.log('Modified polygon coordinates:', coordinates);
                     console.log('Modified polygon bounding box:', extent);
                 }
             });
