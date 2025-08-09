@@ -13,10 +13,10 @@ WORKDIR /app
 # libspatialindex-dev: For R-tree spatial indexing used by geopandas
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    gdal-bin \
-    libgdal-dev \
-    build-essential \
-    libspatialindex-dev \
+    # gdal-bin \
+    # libgdal-dev \
+    # build-essential \
+    # libspatialindex-dev \
     gcc \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
