@@ -39,7 +39,7 @@ class Results(SQLModel, table=True):
     analysis_date: datetime
     analysis_type: str
     request_params: dict = Field(sa_column=Column(JSON))# This is includes the parameters from AnalysisBody. SQLModel does not support adding it as a type. So we set type to JSON.
-    status: str = Field(default="Pending")
+    status: str = Field(default="RUNNING")
     requested_at: datetime
     completed_at: datetime | None = Field(default=None)
     error_message: str | None = Field(default=None)
