@@ -33,7 +33,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Expose the port your FastAPI app runs on
-EXPOSE 80
+EXPOSE 8080
 
 # Command to run your application using Uvicorn
 # --host 0.0.0.0 makes the server accessible from outside the container
