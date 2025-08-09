@@ -1,32 +1,36 @@
-# Base-----------------------------------
-matplotlib>=3.2.2
-opencv-python>=4.6.0
-Pillow>=7.1.2
-PyYAML>=5.3.1
-requests>=2.23.0
-scipy>=1.4.1
-torch>=1.7.0
-torchvision>=0.8.1
-tqdm>=4.64.0
-
-pandas>=1.1.4
-seaborn>=0.11.0
-
-gradio==3.35.2
-
-# Ultralytics-----------------------------------
-git+https://github.com/TobyMayn/ultralytics.git@main
+# Core FastAPI and database dependencies
 fastapi[standard]
 uvicorn[standard]
-numpy
-rasterio
-Pillow
-scikit-image
-PyMySQL # For MySQL database connection
-geopandas
-shapely
 sqlmodel
+PyMySQL
 cryptography
 pyjwt
 passlib[bcrypt]
 
+# Core ML and image processing (essential for algorithms)
+torch>=1.7.0
+torchvision>=0.8.1
+numpy
+opencv-python>=4.6.0
+Pillow>=7.1.2
+scikit-image
+scipy>=1.4.1
+
+# Geospatial processing
+rasterio
+geopandas
+shapely
+pyproj
+
+# Utilities
+PyYAML>=5.3.1
+requests>=2.23.0
+tqdm>=4.64.0
+
+# Custom ultralytics (required for FastSAM)
+git+https://github.com/TobyMayn/ultralytics.git@main
+
+# Optional dependencies (commented out to reduce memory usage)
+# pandas>=1.1.4
+# seaborn>=0.11.0
+# gradio==3.35.2
