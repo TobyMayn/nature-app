@@ -38,7 +38,7 @@ class Results(SQLModel, table=True):
     location_id: int = Field(foreign_key="location.location_id")
     analysis_date: datetime
     analysis_type: str
-    request_params: dict = Field(sa_column=Column(JSON))# This is includes the parameters from AnalysisBody. SQLModel does not support adding it as a type. So we set type to JSON.
+    request_parameters: dict = Field(sa_column=Column(JSON))# This is includes the parameters from AnalysisBody. SQLModel does not support adding it as a type. So we set type to JSON.
     status: str = Field(default="RUNNING")
     requested_at: datetime
     completed_at: datetime | None = Field(default=None)
