@@ -19,6 +19,7 @@ RUN apt-get update && \
     libspatialindex-dev \
     gcc \
     python3-dev \
+    libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt and install Python dependencies
