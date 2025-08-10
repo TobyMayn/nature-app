@@ -22,6 +22,7 @@ rasterio
 geopandas
 shapely
 pyproj
+owslib
 
 # Utilities
 PyYAML>=5.3.1
