@@ -30,4 +30,4 @@ class ResultsController():
                 )
     
     async def get_results(self, user_id: int, session: Session):
-        return await db_results.get_results(session=session)
+        return await db_results.get_results(session)

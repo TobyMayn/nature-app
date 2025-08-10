@@ -75,7 +75,7 @@ class AlgorithmService:
             # Clean up downloaded images after analysis
             self._cleanup_downloaded_images()
 
-        result_id = db_results.update_results(session, result_id, result)
+        result_id = await db_results.update_results(session, result_id, result)
         
         return AnalysisPayload(result_id=result_id)
         
