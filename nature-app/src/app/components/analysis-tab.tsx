@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { apiClient } from '../lib/api-client';
+import { useEffect, useState } from 'react';
+import { useAPI } from '../hooks/use-api';
 
 interface AnalysisResult {
   results_id: number;
@@ -29,7 +29,8 @@ interface AnalysisTabProps {
 }
 
 export default function AnalysisTab({ isVisible, onClose, polygonBbox }: AnalysisTabProps) {
-  const [analysisType, setAnalysisType] = useState<'ortho' | 'satellite'>('ortho');
+  const { apiClient } = useAPI();
+  const [analysisType, setAnalysisType] = useState<'orthophoto' | 'satellite'>('orthophoto');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [results, setResults] = useState<AnalysisResult[]>([]);
@@ -64,10 +65,11 @@ export default function AnalysisTab({ isVisible, onClose, polygonBbox }: Analysi
     setIsLoading(true);
     try {
       await apiClient.post('/results/analyse', {
-        analysisType,
-        startDate,
-        endDate,
+        analysis_type: analysisType,
+        start_date: startDate,
+        end_date: endDate,
         bbox: polygonBbox,
+        requested_at: new Date().toISOString(),
       });
 
       // Refresh results after analysis is submitted
@@ -108,9 +110,9 @@ export default function AnalysisTab({ isVisible, onClose, polygonBbox }: Analysi
               <input
                 type="radio"
                 name="analysisType"
-                value="ortho"
-                checked={analysisType === 'ortho'}
-                onChange={(e) => setAnalysisType(e.target.value as 'ortho' | 'satellite')}
+                value="orthophoto"
+                checked={analysisType === 'orthophoto'}
+                onChange={(e) => setAnalysisType(e.target.value as 'orthophoto' | 'satellite')}
                 className="mr-2"
               />
               Ortho Analysis
@@ -121,7 +123,7 @@ export default function AnalysisTab({ isVisible, onClose, polygonBbox }: Analysi
                 name="analysisType"
                 value="satellite"
                 checked={analysisType === 'satellite'}
-                onChange={(e) => setAnalysisType(e.target.value as 'ortho' | 'satellite')}
+                onChange={(e) => setAnalysisType(e.target.value as 'orthophoto' | 'satellite')}
                 className="mr-2"
               />
               Satellite Analysis

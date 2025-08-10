@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from 'react';
-import { apiClient } from '../lib/api-client';
+import { useAPI } from '../hooks/use-api';
 
 interface AnalysisResult {
   results_id: number;
@@ -28,6 +28,7 @@ interface ResultsViewerProps {
 }
 
 export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps) {
+  const { apiClient } = useAPI();
   const [results, setResults] = useState<AnalysisResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
