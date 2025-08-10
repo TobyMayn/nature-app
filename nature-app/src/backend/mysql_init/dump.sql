@@ -126,9 +126,9 @@ DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` int NOT NULL,
   `username` varchar(25) NOT NULL,
-  `password_hash` varchar(30) NOT NULL,
-  `email` varchar(30) DEFAULT NULL,
-  `municipality` varchar(40) DEFAULT NULL,
+  `password_hash` varchar(60) NOT NULL,
+  `email` varchar(45) DEFAULT NULL,
+  `municipality` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
