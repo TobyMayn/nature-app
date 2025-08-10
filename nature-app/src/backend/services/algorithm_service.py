@@ -36,6 +36,7 @@ layers_dict = {
 
 class AlgorithmService:
     async def create_analysis(self, user_id: int, session: Session, body: AnalysisBody):
+        print("Created analysis")
         analysis_type = body.analysis_type
         bbox = body.bbox
         try:
