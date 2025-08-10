@@ -33,7 +33,7 @@ class AnalysisPayload(BaseModel):
     result_id: int
 
 class Results(SQLModel, table=True):
-    results_id: int | None = Field(default=None, primary_key=True)
+    result_id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.user_id")
     location_id: int = Field(foreign_key="location.location_id")
     analysis_date: datetime
