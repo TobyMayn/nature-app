@@ -11,7 +11,7 @@ class Users(SQLModel, table=True):
     email: str | None = Field(default=None, max_length=30)
     municipality: str | None = Field(default=None, max_length=40)
 
-class Location(SQLModel, table=True):
+class Locations(SQLModel, table=True):
     location_id: int | None = Field(default=None, primary_key=True)
     polygon: str
 
