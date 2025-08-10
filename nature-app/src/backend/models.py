@@ -13,7 +13,7 @@ class Users(SQLModel, table=True):
 
 class Locations(SQLModel, table=True):
     location_id: int | None = Field(default=None, primary_key=True)
-    polygon: str
+    area: str
 
 class Token(BaseModel):
     access_token: str
