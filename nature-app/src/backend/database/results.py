@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 
 
 class ResultsAccess:
-    async def create_results(session: Session, body: AnalysisBody, user_id:int, location_id: int) -> int:
+    async def create_results(self, session: Session, body: AnalysisBody, user_id:int, location_id: int) -> int:
         
         # Create and extract fields from body object
         analysis_date = datetime.now()
@@ -25,7 +25,7 @@ class ResultsAccess:
         return result.results_id
 
 
-    async def update_results(session: Session, result_id: int, result: dict) -> int:
+    async def update_results(self, session: Session, result_id: int, result: dict) -> int:
         # Retrieve correct resulta entry to update with analysis results
         statement = select(Results).where(Results.results_id == result_id)
         results = session.exec(statement).first()
@@ -46,9 +46,10 @@ class ResultsAccess:
 
         return results.results_id
     
-    async def get_results(session: Session,
+    async def get_results(self, session: Session,
         offset: int = 0,
         limit: Annotated[int, Query(le=100)] = 100,
     ) -> list[Results]:
-        results = session.exec(select(Results).offset(offset).limit(limit)).all()
+        statement = select(Results).offset(offset).limit(limit)
+        results = session.exec(statement).all()
         return results
