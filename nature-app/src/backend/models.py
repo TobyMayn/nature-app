@@ -35,7 +35,7 @@ class AnalysisPayload(BaseModel):
 class Results(SQLModel, table=True):
     result_id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.user_id")
-    location_id: int = Field(foreign_key="location.location_id")
+    location_id: int = Field(foreign_key="locations.location_id")
     analysis_date: datetime
     analysis_type: str
     request_parameters: dict = Field(sa_column=Column(JSON))# This is includes the parameters from AnalysisBody. SQLModel does not support adding it as a type. So we set type to JSON.
