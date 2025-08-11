@@ -22,7 +22,7 @@ class ResultsAccess:
         session.commit()
         session.refresh(result)
 
-        return result.results_id
+        return result.result_id
 
 
     async def update_results(self, session: Session, result_id: int, result: dict) -> int:
@@ -44,7 +44,7 @@ class ResultsAccess:
         session.commit()
         session.refresh(results)
 
-        return results.results_id
+        return results.result_id
     
     async def get_results(self, session: Session,
         offset: int = 0,
