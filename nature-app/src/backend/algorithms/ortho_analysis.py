@@ -336,8 +336,8 @@ class OrthoAnalysis:
         height, width = mask.shape
         
         # Create transform from pixel coordinates to geographic coordinates
-        # bbox format: [min_lat, min_lon, max_lat, max_lon] but we need [min_x, min_y, max_x, max_y]
-        min_x, min_y, max_x, max_y = bbox[1], bbox[0], bbox[3], bbox[2]  # lon=x, lat=y
+        # bbox format from OpenLayers: [minX, minY, maxX, maxY] in EPSG:25832
+        min_x, min_y, max_x, max_y = bbox[0], bbox[1], bbox[2], bbox[3]
         transform_matrix = Affine.from_gdal(min_x, (max_x - min_x) / width, 0, max_y, 0, (min_y - max_y) / height)
         
         # Set up coordinate transformation (only if source_crs is different from EPSG:25832)
