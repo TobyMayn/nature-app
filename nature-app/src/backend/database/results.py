@@ -49,7 +49,17 @@ class ResultsAccess:
     async def get_results(self, session: Session,
         offset: int = 0,
         limit: Annotated[int, Query(le=100)] = 100,
+        user_id: int = None,
     ) -> list[Results]:
-        statement = select(Results).offset(offset).limit(limit)
+        statement = select(Results).order_by(Results.requested_at.desc()).offset(offset).limit(limit)
+        if user_id is not None:
+            statement = statement.where(Results.user_id == user_id)
         results = session.exec(statement).all()
         return results
+    
+    async def get_result_by_id(self, session: Session, result_id: int, user_id: int = None) -> Results | None:
+        statement = select(Results).where(Results.result_id == result_id)
+        if user_id is not None:
+            statement = statement.where(Results.user_id == user_id)
+        result = session.exec(statement).first()
+        return result
