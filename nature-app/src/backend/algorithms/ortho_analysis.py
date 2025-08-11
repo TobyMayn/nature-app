@@ -253,9 +253,40 @@ class OrthoAnalysis:
             if bbox is None:
                 raise ValueError("bbox parameter is required when return_polygons=True")
             polygons = self._mask_to_polygons(final_pred_mask, bbox)
-            return {"np_array": final_pred_mask, "polygons": polygons}
+            return self._serialize_result(final_pred_mask, polygons)
         else:
-            return {"np_array": final_pred_mask, "polygons": []}
+            return self._serialize_result(final_pred_mask, [])
+
+    def _serialize_result(self, mask: np.ndarray, polygons: list) -> dict:
+        """
+        Converts numpy array and shapely polygons to JSON-serializable format.
+        
+        Args:
+            mask: Binary mask as numpy array
+            polygons: List of shapely Polygon objects
+            
+        Returns:
+            Dictionary with JSON-serializable data
+        """
+        # Convert numpy array to list
+        mask_list = mask.tolist()
+        
+        # Convert shapely polygons to GeoJSON-like format
+        polygon_data = []
+        for polygon in polygons:
+            if hasattr(polygon, 'exterior'):
+                coords = list(polygon.exterior.coords)
+                polygon_data.append({
+                    "type": "Polygon",
+                    "coordinates": [coords],
+                    "area": polygon.area
+                })
+        
+        return {
+            "mask": mask_list,
+            "polygons": polygon_data,
+            "mask_shape": mask.shape
+        }
 
     def _run_inference_with_tta(self, net, tensorA, tensorB, use_tta: bool) -> torch.Tensor:
         """
