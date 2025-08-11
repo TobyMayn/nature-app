@@ -54,7 +54,7 @@ class ResultsAccess:
         statement = select(Results)
         if user_id is not None:
             statement = statement.where(Results.user_id == user_id)
-        statement = statement.order_by(Results.requested_at.desc()).offset(offset).limit(limit)
+        statement = statement.offset(offset).limit(limit)
         results = session.exec(statement).all()
         return results
     
