@@ -22,13 +22,26 @@ interface AnalysisResult {
   result: Record<string, unknown> | null;
 }
 
+interface AnalysisPolygon {
+  type: string;
+  coordinates: number[][][];
+  area: number;
+}
+
+interface AnalysisResultData {
+  mask: number[][];
+  polygons: AnalysisPolygon[];
+  mask_shape: number[];
+}
+
 interface AnalysisTabProps {
   isVisible: boolean;
   onClose: () => void;
   polygonBbox: number[] | null;
+  onApplyResult: (result: AnalysisResultData) => void;
 }
 
-export default function AnalysisTab({ isVisible, onClose, polygonBbox }: AnalysisTabProps) {
+export default function AnalysisTab({ isVisible, onClose, polygonBbox, onApplyResult }: AnalysisTabProps) {
   const { apiClient } = useAPI();
   const [analysisType, setAnalysisType] = useState<'orthophoto' | 'satellite'>('orthophoto');
   const [startDate, setStartDate] = useState('');
@@ -82,9 +95,21 @@ export default function AnalysisTab({ isVisible, onClose, polygonBbox }: Analysi
     }
   };
 
-  const handleApplyLayer = (resultId: string) => {
-    // TODO: Implement layer application logic
-    console.log('Applying layer for result:', resultId);
+  const handleApplyLayer = async (resultId: string) => {
+    try {
+      // Fetch the specific result details
+      const resultData = await apiClient.get(`/results/${resultId}`) as any;
+      
+      if (resultData.result && resultData.result.polygons) {
+        // Apply the polygons to the map
+        onApplyResult(resultData.result as AnalysisResultData);
+        console.log(`Applied layer for result ${resultId} with ${resultData.result.polygons.length} polygons`);
+      } else {
+        console.warn(`No polygon data found for result ${resultId}`);
+      }
+    } catch (error) {
+      console.error('Error applying layer:', error);
+    }
   };
 
   if (!isVisible) return null;

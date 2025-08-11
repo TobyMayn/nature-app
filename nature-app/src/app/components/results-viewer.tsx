@@ -22,27 +22,55 @@ interface AnalysisResult {
   result: Record<string, unknown> | null;
 }
 
+interface AnalysisPolygon {
+  type: string;
+  coordinates: number[][][];
+  area: number;
+}
+
+interface AnalysisResult {
+  mask: number[][];
+  polygons: AnalysisPolygon[];
+  mask_shape: number[];
+}
+
 interface ResultsViewerProps {
   isVisible: boolean;
   onClose: () => void;
+  onApplyResult: (result: AnalysisResult) => void;
 }
 
-export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps) {
+export default function ResultsViewer({ isVisible, onClose, onApplyResult }: ResultsViewerProps) {
   const { apiClient } = useAPI();
   const [results, setResults] = useState<AnalysisResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const resultsPerPage = 10;
 
   useEffect(() => {
     if (isVisible) {
-      fetchResults();
+      setCurrentPage(0);
+      setHasMore(true);
+      fetchResults(0, false);
     }
   }, [isVisible]);
 
-  const fetchResults = async () => {
+  const fetchResults = async (page: number = 0, append: boolean = false) => {
     setIsLoading(true);
     try {
-      const data = await apiClient.get('/results') as AnalysisResult[];
-      setResults(data.slice(0, 10)); // Show max 10 most recent results
+      const offset = page * resultsPerPage;
+      const data = await apiClient.get(`/results?offset=${offset}&limit=${resultsPerPage}`) as AnalysisResult[];
+      
+      if (append && page > 0) {
+        setResults(prev => [...prev, ...data]);
+      } else {
+        setResults(data);
+        setCurrentPage(0);
+      }
+      
+      // Check if there are more results
+      setHasMore(data.length === resultsPerPage);
     } catch (error) {
       console.error('Error fetching results:', error);
     } finally {
@@ -50,9 +78,33 @@ export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps
     }
   };
 
-  const handleApplyLayer = (resultId: string) => {
-    // TODO: Implement layer application logic
-    console.log('Applying layer for result:', resultId);
+  const handleApplyLayer = async (resultId: string) => {
+    try {
+      // Fetch the specific result details
+      const resultData = await apiClient.get(`/results/${resultId}`) as any;
+      
+      if (resultData.result && resultData.result.polygons) {
+        // Apply the polygons to the map
+        onApplyResult(resultData.result as AnalysisResult);
+        console.log(`Applied layer for result ${resultId} with ${resultData.result.polygons.length} polygons`);
+      } else {
+        console.warn(`No polygon data found for result ${resultId}`);
+      }
+    } catch (error) {
+      console.error('Error applying layer:', error);
+    }
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    fetchResults(nextPage, true);
+  };
+
+  const handleRefresh = () => {
+    setCurrentPage(0);
+    setHasMore(true);
+    fetchResults(0, false);
   };
 
   if (!isVisible) return null;
@@ -71,7 +123,12 @@ export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps
         </div>
 
         <div>
-          <h3 className="text-lg font-medium mb-3">Recent Results</h3>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-medium">Recent Results</h3>
+            <span className="text-sm text-gray-500">
+              {results.length} result{results.length !== 1 ? 's' : ''} loaded
+            </span>
+          </div>
           <div className="space-y-3">
             {isLoading ? (
               <p className="text-gray-500 text-sm">Loading results...</p>
@@ -115,13 +172,25 @@ export default function ResultsViewer({ isVisible, onClose }: ResultsViewerProps
             )}
           </div>
           
-          <button
-            onClick={fetchResults}
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed mt-4"
-          >
-            {isLoading ? 'Refreshing...' : 'Refresh'}
-          </button>
+          <div className="mt-4 space-y-2">
+            <button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {isLoading && currentPage === 0 ? 'Refreshing...' : 'Refresh'}
+            </button>
+            
+            {hasMore && (
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoading}
+                className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isLoading && currentPage > 0 ? 'Loading More...' : 'Load More'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
