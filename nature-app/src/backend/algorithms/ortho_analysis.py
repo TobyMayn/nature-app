@@ -64,7 +64,7 @@ class OrthoAnalysis:
             default_crop_size: Default crop size for processing large images
             default_tta: Whether to use test time augmentation by default
         """
-        self.device = torch.device(device, int(0))
+        self.device = torch.device(device) if device == 'cpu' else torch.device(device, int(0))
         
         # Auto-find checkpoint if not provided
         if model_checkpoint_path is None:
