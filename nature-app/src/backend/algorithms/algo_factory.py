@@ -17,7 +17,7 @@ class ConcreteAlgorithmFactory(AbstractAlgorithmFactory):
     def create_algorithm(self, type: str):
         match type:
             case "orthophoto":
-                return OrthoAnalysis()
+                return OrthoAnalysis(device="cpu")
             case "satelitte":
                 return SatelitteAnalysis()
             case _:
