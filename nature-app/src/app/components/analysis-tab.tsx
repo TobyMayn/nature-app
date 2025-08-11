@@ -66,10 +66,10 @@ export default function AnalysisTab({ isVisible, onClose, polygonBbox }: Analysi
     try {
       await apiClient.post('/results/analyse', {
         analysis_type: analysisType,
-        start_date: startDate,
-        end_date: endDate,
+        start_date: startDate + ' 00:00:00',
+        end_date: endDate + ' 00:00:00',
         bbox: polygonBbox,
-        requested_at: new Date().toISOString() + ' 00:00:00',
+        requested_at: new Date().toISOString(),
       });
 
       // Refresh results after analysis is submitted
