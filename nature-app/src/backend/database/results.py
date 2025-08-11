@@ -51,9 +51,10 @@ class ResultsAccess:
         limit: Annotated[int, Query(le=100)] = 100,
         user_id: int = None,
     ) -> list[Results]:
-        statement = select(Results).order_by(Results.requested_at.desc()).offset(offset).limit(limit)
+        statement = select(Results)
         if user_id is not None:
             statement = statement.where(Results.user_id == user_id)
+        statement = statement.order_by(Results.requested_at.desc()).offset(offset).limit(limit)
         results = session.exec(statement).all()
         return results
     
