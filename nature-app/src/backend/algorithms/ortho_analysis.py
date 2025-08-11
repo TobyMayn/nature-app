@@ -78,7 +78,8 @@ class OrthoAnalysis:
 
     def _load_model(self, chkpt_path: str):
         """Loads the PyTorch model from the checkpoint path."""
-        net = Net()
+        device_str = 'cpu' if self.device.type == 'cpu' else str(self.device)
+        net = Net(device=device_str)
         state_dict = torch.load(chkpt_path, map_location="cpu", weights_only=False)
         new_state_dict = OrderedDict()
         for k, v in state_dict.items():
