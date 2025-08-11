@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useAPI } from '../hooks/use-api';
 
-interface AnalysisResult {
-  results_id: number;
+interface DatabaseAnalysisResult {
+  result_id: number;
   user_id: number;
   location_id: number;
   analysis_date: string;
@@ -42,7 +42,7 @@ interface ResultsViewerProps {
 
 export default function ResultsViewer({ isVisible, onClose, onApplyResult }: ResultsViewerProps) {
   const { apiClient } = useAPI();
-  const [results, setResults] = useState<AnalysisResult[]>([]);
+  const [results, setResults] = useState<DatabaseAnalysisResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -60,7 +60,7 @@ export default function ResultsViewer({ isVisible, onClose, onApplyResult }: Res
     setIsLoading(true);
     try {
       const offset = page * resultsPerPage;
-      const data = await apiClient.get(`/results?offset=${offset}&limit=${resultsPerPage}`) as AnalysisResult[];
+      const data = await apiClient.get(`/results?offset=${offset}&limit=${resultsPerPage}`) as DatabaseAnalysisResult[];
       
       if (append && page > 0) {
         setResults(prev => [...prev, ...data]);
@@ -137,7 +137,7 @@ export default function ResultsViewer({ isVisible, onClose, onApplyResult }: Res
             ) : (
               results.map((result) => (
                 <div
-                  key={result.results_id}
+                  key={result.result_id}
                   className="border border-gray-200 rounded-lg p-3"
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -148,7 +148,7 @@ export default function ResultsViewer({ isVisible, onClose, onApplyResult }: Res
                       </p>
                       <span
                         className={`inline-block px-2 py-1 text-xs rounded-full mt-1 ${
-                          result.status === 'complete'
+                          result.status === 'COMPLETE'
                             ? 'bg-green-100 text-green-800'
                             : result.status === 'error'
                             ? 'bg-red-100 text-red-800'
@@ -158,9 +158,9 @@ export default function ResultsViewer({ isVisible, onClose, onApplyResult }: Res
                         {result.status}
                       </span>
                     </div>
-                    {result.status === 'complete' && (
+                    {result.status === 'COMPLETE' && (
                       <button
-                        onClick={() => handleApplyLayer(result.results_id.toString())}
+                        onClick={() => handleApplyLayer(result.result_id.toString())}
                         className="text-sm bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded"
                       >
                         Apply Layer
