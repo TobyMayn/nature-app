@@ -19,8 +19,8 @@ class ResultsAccess:
         
         # Create entry of result in DB
         session.add(result)
-        await session.commit()
-        await session.refresh(result)
+        session.commit()
+        session.refresh(result)
 
         return result.results_id
 
@@ -41,8 +41,8 @@ class ResultsAccess:
             results.error_message = error_message
 
         session.add(results)
-        await session.commit()
-        await session.refresh(results)
+        session.commit()
+        session.refresh(results)
 
         return results.results_id
     
