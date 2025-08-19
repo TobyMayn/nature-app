@@ -17,7 +17,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         console.log('Sending request with body:', formData.toString());
         try {
-          const response = await fetch(`http://130.226.56.134/api/v1/auth/login`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://130.226.56.134/api/v1'}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',

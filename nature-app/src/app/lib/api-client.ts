@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://130.226.56.134/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://130.226.56.134/api/v1';
 
 export class APIClient {
   private token: string | null = null;

@@ -128,7 +128,7 @@ function MapView() {
                 //     source: new WMTS({
                 //         // Base URL from GetCapabilities 'GetTile' operation xlink:href
                 //         // Append username/password as query parameters
-                //         url: 'https://services.datafordeler.dk/DKskaermkort/topo_skaermkort_daempet/1.0.0/Wmts?username=STGGAEECCJ&password=een!oM8HJ7_!aCw6',
+                //         url: `${process.env.NEXT_PUBLIC_WMS_BASE_URL}?username=${process.env.NEXT_PUBLIC_WMS_USERNAME}&password=${process.env.NEXT_PUBLIC_WMS_PASSWORD}`,
                 //         layer: 'topo_skaermkort_daempet',
                 //         matrixSet: 'View1',
                 //         format: 'image/jpeg',
