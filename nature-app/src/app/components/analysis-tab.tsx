@@ -19,7 +19,7 @@ interface AnalysisResult {
   requested_at: string;
   completed_at: string | null;
   error_message: string | null;
-  result: Record<string, unknown> | null;
+  result: AnalysisResultData | null;
 }
 
 interface AnalysisPolygon {
@@ -98,7 +98,7 @@ export default function AnalysisTab({ isVisible, onClose, polygonBbox, onApplyRe
   const handleApplyLayer = async (resultId: string) => {
     try {
       // Fetch the specific result details
-      const resultData = await apiClient.get(`/results/${resultId}`) as any;
+      const resultData = await apiClient.get(`/results/${resultId}`) as AnalysisResult;
       
       if (resultData.result && resultData.result.polygons) {
         // Apply the polygons to the map
