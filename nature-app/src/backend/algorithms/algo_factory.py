@@ -14,6 +14,7 @@ class AbstractAlgorithmFactory(ABC):
 
 
 class ConcreteAlgorithmFactory(AbstractAlgorithmFactory):
+    """ Concrete class implementation with analysis instantiation"""
     def create_algorithm(self, type: str):
         match type:
             case "orthophoto":

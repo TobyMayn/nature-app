@@ -4,12 +4,16 @@ from typing import List, Literal, Optional, Tuple
 
 import numpy as np
 import rasterio  # For satellite data handling (if needed)
+from dotenv import load_dotenv
 from fastapi import HTTPException
 from owslib.wms import WebMapService
 from PIL import Image
 
 # Import shapely for geometry processing
 from sqlmodel import DateTime
+
+# Load environment variables
+load_dotenv()
 
 
 # Re-incorporate the ImageDownloader from Crop_images_SG.py
@@ -34,7 +38,12 @@ class ImageDownloader:
         self.length = length  # Tile length in meters
         self.width = width    # Tile width in meters
         self.layers = layers
-        self.url = 'https://services.datafordeler.dk/GeoDanmarkOrto/orto_foraar/1.0.0/WMS?username=UFZLDDPIJS&password=DAIdatafordel123'
+        
+        # Build WMS URL from environment variables
+        WMS_BASE_URL = os.getenv("WMS_URL")
+        WMS_USERNAME = os.getenv("WMS_USERNAME")
+        WMS_PASSWORD = os.getenv("WMS_PASSWORD")
+        self.url = f'{WMS_BASE_URL}?username={WMS_USERNAME}&password={WMS_PASSWORD}'
         self.wms = WebMapService(self.url, version='1.3.0')
 
     def _download_tile(self, min_lon: float, min_lat: float, max_lon: float, max_lat: float, file_path: str, layer: str):

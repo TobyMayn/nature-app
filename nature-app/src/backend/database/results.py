@@ -26,11 +26,11 @@ class ResultsAccess:
 
 
     async def update_results(self, session: Session, result_id: int, result: dict) -> int:
-        # Retrieve correct resulta entry to update with analysis results
+        # Retrieve correct results entry to update with analysis results
         statement = select(Results).where(Results.result_id == result_id)
         results = session.exec(statement).first()
         if not results:
-            raise Exception #TODO: raise correct exception
+            raise Exception("Could not retrieve results")
 
         results.status = "Complete"
         results.result = result

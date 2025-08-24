@@ -7,7 +7,7 @@ from sqlmodel import JSON, Column, Field, SQLModel
 class Users(SQLModel, table=True):
     user_id: int = Field(primary_key=True)
     username: str = Field(max_length=25)
-    password_hash: str = Field(max_length=30)
+    password_hash: str = Field(max_length=60)
     email: str | None = Field(default=None, max_length=30)
     municipality: str | None = Field(default=None, max_length=40)
 

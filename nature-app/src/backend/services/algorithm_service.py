@@ -62,7 +62,7 @@ class AlgorithmService:
         
         
         try:
-            # Get algorithm based on analysis type
+            # Create algorithm based on analysis type
             algorithm = concrete_algorithm_factory.create_algorithm(analysis_type)
         except InvalidAlgorithmException as e:
             raise e
