@@ -85,3 +85,8 @@ bun dev
 ```
 
 The application will start on [http://localhost:3000](http://localhost:3000).
+
+## DISCLAIMER ##
+The project has also been deployed to Vercel for easier access. This however requires additional setup on the server, that, at the time of writing this, hasn't been set up yet.
+However, I hope to have that done before the exam.
+Vercel hosted URL: [Nature App](https://nature-app-ten.vercel.app/)
