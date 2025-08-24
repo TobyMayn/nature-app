@@ -14,7 +14,7 @@ A Next.js web application for nature assessment and analysis, developed in colla
 
 Before running the application locally, ensure you have the following installed:
 
-- **Node.js**: Version 18 or higher
+- **Node.js**: Version 20 or higher
 - **npm**, **yarn**, **pnpm**, or **bun**: Package manager of your choice
 
 ## Getting Started
