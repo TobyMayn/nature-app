@@ -18,7 +18,7 @@ services:
     build: ./src/backend
     container_name: backend_api
     ports:
-      - "8080:80" # Expose backend API on host port 8080 for nginx proxy
+      - "80:80" # Expose backend API on host port 8080 for nginx proxy
     environment:
       DATABASE_HOST: db
       DATABASE_NAME: ${MYSQL_DATABASE:-nature_app}
