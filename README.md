@@ -1,4 +1,5 @@
 # Nature App Frontend
+!! DISCLAIMER: The DTU provided server has been taken down. To run the project you should run the docker container locally or on your own server !!
 
 A Next.js web application for nature assessment and analysis, developed in collaboration with Høje-Taastrup Municipality and DTU.
 
