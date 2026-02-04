@@ -6,6 +6,7 @@ PyMySQL
 cryptography
 pyjwt
 passlib[bcrypt]
+bcrypt==4.0.1
 
 # Core ML and image processing (CPU-only to reduce memory usage)
 torch>=1.7.0
