@@ -34,8 +34,10 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Expose the port your FastAPI app runs on
-EXPOSE 80
+EXPOSE 8080
+
+RUN wget https://github.com/ultralytics/assets/releases/download/v8.3.0/FastSAM-x.pt -O /app/FastSAM-x.pt
 
 # Command to run your application using Uvicorn
 # --host 0.0.0.0 makes the server accessible from outside the container
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
